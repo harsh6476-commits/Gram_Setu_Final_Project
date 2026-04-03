@@ -1,76 +1,117 @@
 const express = require('express');
 const router = express.Router();
 const Consultation = require('../models/Consultation');
-const User = require('../models/User');
 
-// @route   POST /api/consultations/request
-// @desc    Request a new consultation
-// @access  Private/Public (depending on your logic)
-router.post('/request', async (req, res) => {
-    const { uid, problem } = req.body;
-
-    if (!uid || !problem) {
-        return res.status(400).json({ success: false, message: 'UID and problem are required' });
-    }
-
+// POST /api/consultation/create
+router.post('/create', async (req, res) => {
     try {
-        // Optional: Look up patient name if UID exists in User collection
-        const user = await User.findOne({ uid });
-        const patientName = user ? user.name : 'Unknown';
-
-        const consultation = new Consultation({
-            uid,
-            problem,
-            patientName
+        const { patientName, patientUID, patientAge, patientGender, reason, bookedBy } = req.body;
+        
+        const newConsultation = new Consultation({
+            patientName,
+            patientUID,
+            patientAge,
+            patientGender,
+            reason,
+            bookedBy,
+            status: 'pending'
         });
 
-        await consultation.save();
-        res.status(201).json({ success: true, consultation });
+        await newConsultation.save();
+        res.status(201).json({ success: true, message: 'Consultation request created', consultation: newConsultation });
     } catch (error) {
-        console.error('Consultation creation error:', error.message);
+        console.error('Error in /create:', error);
         res.status(500).json({ success: false, message: 'Server error creating consultation' });
     }
 });
 
-// @route   GET /api/consultations/pending
-// @desc    Get all pending consultations (for Doctor)
-// @access  Private/Public
-router.get('/pending', async (req, res) => {
+// GET /api/consultation/all
+// Return only consultations where status = 'pending' AND acceptedByDoctorId = null
+router.get('/all', async (req, res) => {
     try {
-        const pending = await Consultation.find({ status: 'pending' }).sort({ createdAt: -1 });
-        res.status(200).json({ success: true, consultations: pending });
+        const consultations = await Consultation.find({ 
+            status: 'pending', 
+            acceptedByDoctorId: null 
+        }).sort({ createdAt: -1 });
+        
+        res.status(200).json({ success: true, consultations });
     } catch (error) {
-        console.error('Fetch pending consultations error:', error.message);
-        res.status(500).json({ success: false, message: 'Server error fetching pending consultations' });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 });
 
-// @route   GET /api/consultations/user/:uid
-// @desc    Get all consultation records for a specific UID (for Panchayat)
-// @access  Private/Public
-router.get('/user/:uid', async (req, res) => {
-    const { uid } = req.params;
+// @route   PATCH /api/consultation/accept/:id
+// @desc    Accept a consultation request
+router.patch('/accept/:id', async (req, res) => {
     try {
-        const records = await Consultation.find({ uid }).sort({ createdAt: -1 });
-        res.status(200).json({ success: true, records });
+        const { acceptedByDoctorId, acceptedByDoctorName } = req.body;
+        console.log(`👨‍⚕️ Doctor ${acceptedByDoctorName} (${acceptedByDoctorId}) is accepting consultation ${req.params.id}`);
+        
+        const updatedConsultation = await Consultation.findByIdAndUpdate(
+            req.params.id,
+            { 
+                status: 'accepted', 
+                acceptedByDoctorId, 
+                acceptedByDoctorName 
+            },
+            { new: true }
+        );
+        
+        if (!updatedConsultation) {
+            console.error('❌ Consultation not found for acceptance');
+            return res.status(404).json({ success: false, message: 'Consultation not found' });
+        }
+
+        console.log('✅ Consultation status updated to accepted');
+        res.status(200).json({ success: true, message: 'Consultation accepted', consultation: updatedConsultation });
     } catch (error) {
-        console.error('Fetch user history error:', error.message);
-        res.status(500).json({ success: false, message: 'Server error fetching user history' });
+        console.error('❌ Error accepting consultation:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 });
 
-// @route   PATCH /api/consultations/:id/complete
-// @desc    Complete a consultation (mark as completed)
-router.patch('/:id/complete', async (req, res) => {
+// @route   GET /api/consultation/accepted/:doctorId
+// @desc    Get all accepted consultations for a specific doctor
+router.get('/accepted/:doctorId', async (req, res) => {
+    try {
+        console.log(`📡 Fetching accepted consultations for Doctor ID: ${req.params.doctorId}`);
+        const consultations = await Consultation.find({ 
+            acceptedByDoctorId: req.params.doctorId.toString(),
+            status: 'accepted'
+        }).sort({ createdAt: -1 });
+        
+        console.log(`✅ Found ${consultations.length} accepted consultations`);
+        res.status(200).json({ success: true, consultations });
+    } catch (error) {
+        console.error('❌ Error fetching accepted consultations:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
+// PATCH /api/consultation/complete/:id
+router.patch('/complete/:id', async (req, res) => {
     try {
         const consultation = await Consultation.findByIdAndUpdate(
-            req.params.id, 
+            req.params.id,
             { status: 'completed' },
             { new: true }
         );
-        res.status(200).json({ success: true, consultation });
+        res.status(200).json({ success: true, message: 'Consultation completed', consultation });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error marking completed' });
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
+// GET /api/consultation/count/:uid
+router.get('/count/:uid', async (req, res) => {
+    try {
+        const count = await Consultation.countDocuments({ 
+            patientUID: req.params.uid, 
+            status: 'completed' 
+        });
+        res.status(200).json({ success: true, count });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 });
 

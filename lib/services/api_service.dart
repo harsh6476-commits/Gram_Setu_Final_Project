@@ -28,4 +28,16 @@ class ApiService {
       body: jsonEncode(body),
     );
   }
+
+  static Future<http.Response> patch(String endpoint, Map<String, dynamic> body) async {
+    final token = await AuthService.getToken();
+    return await http.patch(
+      Uri.parse('$_baseUrl$endpoint'),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(body),
+    );
+  }
 }

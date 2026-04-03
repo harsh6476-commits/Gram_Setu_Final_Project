@@ -4,13 +4,16 @@ const router = express.Router();
 // Import Routes
 const authRoutes = require('./authRoutes');
 const consultationRoutes = require('./consultationRoutes');
+const prescriptionRoutes = require('./prescriptionRoutes');
 const userRoutes = require('./userRoutes');
 const triageRoutes = require('./triageRoutes');
 
 // Use Routes
 router.use('/auth', authRoutes);
-router.use('/consultations', consultationRoutes);
+router.use('/consultation', consultationRoutes);
+router.use('/prescription', prescriptionRoutes);
 router.use('/users', userRoutes);
+router.use('/patient', userRoutes); // Added for consistency with requirements
 router.use('/triage', triageRoutes);
 
 // Optional: Test Route

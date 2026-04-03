@@ -14,26 +14,29 @@ class ConsultationScreen extends StatefulWidget {
 
 class _ConsultationScreenState extends State<ConsultationScreen> {
   final _symptomsController = TextEditingController();
-  final _uidController = TextEditingController();
   bool _submitted = false;
   bool _isLoading = false;
-  final String _selectedUrgency = 'Normal';
 
   @override
   void dispose() {
     _symptomsController.dispose();
-    _uidController.dispose();
     super.dispose();
   }
 
   Future<void> _submitRequest() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final String uid = userProvider.user?['uid'] ?? _uidController.text.trim();
-    final String problem = _symptomsController.text.trim();
+    final user = userProvider.user;
+    
+    if (user == null) {
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not logged in')));
+       return;
+    }
 
-    if (uid.isEmpty || problem.isEmpty) {
+    final String reason = _symptomsController.text.trim();
+
+    if (reason.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter UID and describe the symptoms')),
+        const SnackBar(content: Text('Please describe the symptoms')),
       );
       return;
     }
@@ -41,9 +44,13 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await ApiService.post('/consultations/request', {
-        'uid': uid,
-        'problem': problem,
+      final response = await ApiService.post('/consultation/create', {
+        'patientName': user['name'],
+        'patientUID': user['uid'],
+        'patientAge': user['age'] ?? 25,
+        'patientGender': user['gender'] ?? 'Not specified',
+        'reason': reason,
+        'bookedBy': 'patient',
       });
 
       if (response.statusCode == 201) {
@@ -76,7 +83,6 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
 
   Widget _buildFormView() {
     final user = Provider.of<UserProvider>(context).user;
-    final bool isLoggedIn = user != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,41 +92,26 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
         Text('Describe your symptoms and we will match you with an available doctor.', style: TextStyle(fontSize: 14, color: AppColors.adaptiveTextSecondary(context))),
         const SizedBox(height: 24),
 
-        // Patient info / UID Input
-        isLoggedIn 
-        ? Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(color: AppColors.adaptiveSurface(context), borderRadius: BorderRadius.circular(12)),
-          child: Row(
-            children: [
-              Icon(Icons.person_outline, color: AppColors.primaryTeal),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(user['name'] ?? 'User', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.adaptiveTextPrimary(context))),
-                  Text('UID: ${user['uid'] ?? 'N/A'} • Village: ${user['village'] ?? 'N/A'}', style: TextStyle(fontSize: 12, color: AppColors.adaptiveTextSecondary(context))),
-                ],
-              ),
-            ],
-          ),
-        )
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Patient UID / Aadhar', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.adaptiveTextPrimary(context))),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _uidController,
-                decoration: InputDecoration(
-                  hintText: 'Enter 12-digit UID',
-                  filled: true,
-                  fillColor: AppColors.adaptiveSurface(context),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+        // Patient info Card
+        if (user != null)
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(color: AppColors.adaptiveSurface(context), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.adaptiveBorder(context))),
+            child: Row(
+              children: [
+                Icon(Icons.person_outline, color: AppColors.primaryTeal),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(user['name'] ?? 'User', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.adaptiveTextPrimary(context))),
+                    Text('UID: ${user['uid'] ?? 'N/A'} • Age: ${user['age'] ?? 'N/A'}', style: TextStyle(fontSize: 12, color: AppColors.adaptiveTextSecondary(context))),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+        
         const SizedBox(height: 20),
 
         // Symptoms
@@ -129,11 +120,12 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
         TextField(
           controller: _symptomsController,
           maxLines: 4,
+          style: TextStyle(color: AppColors.adaptiveTextPrimary(context)),
           decoration: InputDecoration(
             hintText: 'E.g., Fever for 3 days, headache, body pain...',
             filled: true,
             fillColor: AppColors.adaptiveSurface(context),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.adaptiveBorder(context))),
           ),
         ),
         const SizedBox(height: 20),
@@ -164,9 +156,10 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
           height: 54,
           child: ElevatedButton(
             onPressed: _isLoading ? null : _submitRequest,
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryTeal, foregroundColor: Colors.white),
             child: _isLoading 
               ? const CircularProgressIndicator(color: Colors.white)
-              : const Text('Submit Consultation Request'),
+              : const Text('Submit Consultation Request', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ),
       ],
@@ -197,8 +190,7 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
           ),
           child: Column(
             children: [
-              _infoRow('Submitted', 'Just now'),
-              _infoRow('Urgency', _selectedUrgency),
+              _infoRow('Patient', Provider.of<UserProvider>(context).user?['name'] ?? 'N/A'),
               _infoRow('Status', 'Matching doctor...'),
               _infoRow('Est. Wait', '~15 minutes'),
             ],
