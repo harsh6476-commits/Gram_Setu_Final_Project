@@ -1,122 +1,120 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:gram_setu/core/theme.dart';
+import 'package:gram_setu/core/theme_provider.dart';
+import 'package:gram_setu/core/user_provider.dart';
+
+import 'package:gram_setu/pages/home.dart';
+import 'package:gram_setu/pages/splash.dart';
+import 'package:gram_setu/pages/login.dart';
+import 'package:gram_setu/pages/asha_worker.dart';
+import 'package:gram_setu/pages/emergency.dart';
+import 'package:gram_setu/pages/panchayat.dart';
+
+import 'package:gram_setu/pages/doctor.dart';
+import 'package:gram_setu/pages/patient.dart';
+import 'package:gram_setu/pages/consultation_screen.dart';
+import 'package:gram_setu/pages/prescription_viewer.dart';
+import 'package:gram_setu/pages/medicine_reminder.dart';
+import 'package:gram_setu/pages/health_history.dart';
+import 'package:gram_setu/pages/health_assistant.dart';
+import 'package:gram_setu/pages/profile_dashboard.dart';
+import 'package:gram_setu/pages/vitals_recorder.dart';
+import 'package:gram_setu/pages/new_patient_registration.dart';
+import 'package:gram_setu/pages/new_doctor_registration.dart';
+import 'package:gram_setu/pages/new_asha_registration.dart';
+import 'package:gram_setu/pages/new_panchayat_registration.dart';
+import 'package:gram_setu/pages/panchayat_auth_screen.dart';
+import 'package:gram_setu/pages/settings_screen.dart';
+import 'package:gram_setu/pages/add_patient_screen.dart';
+import 'package:gram_setu/pages/asha_consultation_screen.dart';
+import 'package:gram_setu/pages/health_awareness_screen.dart';
+import 'package:gram_setu/pages/edit_profile.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
+      child: const GramSetuApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class GramSetuApp extends StatelessWidget {
+  const GramSetuApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
+      title: 'Gram Setu',
+      debugShowCheckedModeBanner: false,
+      theme: GramSetuTheme.lightTheme,
+      darkTheme: GramSetuTheme.darkTheme,
+      themeMode: themeProvider.themeMode,
+      initialRoute: '/home',
+      onGenerateRoute: (settings) {
+        final routes = <String, WidgetBuilder>{
+          '/splash': (context) => const SplashScreen(),
+          '/home': (context) => const RoleSelectionScreen(),
+          '/login': (context) => const LoginScreen(),
+          '/patient': (context) => const PatientDashboard(),
+          '/doctor': (context) => const DoctorDashboard(),
+          '/asha_worker': (context) => const AshaWorkerDashboard(),
+          '/panchayat': (context) => const PanchayatDashboard(),
+          '/emergency': (context) => const EmergencyScreen(),
+          '/consultation': (context) => const ConsultationScreen(),
+          '/prescriptions': (context) => const PrescriptionViewer(),
+          '/medicine_reminder': (context) => const MedicineReminderScreen(),
+          '/health_history': (context) => const HealthHistoryScreen(),
+          '/health_assistant': (context) => const HealthAssistantScreen(),
+          '/profile': (context) => const ProfileDashboard(),
+          '/vitals_recorder': (context) => const VitalsRecorderScreen(),
+          '/patient_registration': (context) => const NewPatientRegistrationScreen(),
+          '/doctor_registration': (context) => const NewDoctorRegistrationScreen(),
+          '/asha_registration': (context) => const NewAshaRegistrationScreen(),
+          '/panchayat_registration': (context) => const NewPanchayatRegistrationScreen(),
+          '/panchayat_auth': (context) => const PanchayatAuthScreen(),
+          '/settings': (context) => const SettingsScreen(),
+          '/add_patient': (context) => const AddPatientScreen(),
+          '/asha_consultation': (context) => const AshaConsultationScreen(),
+          '/health_awareness': (context) => const HealthAwarenessScreen(),
+          '/edit_profile': (context) => const EditProfileScreen(),
+        };
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+        final builder = routes[settings.name];
+        if (builder == null) return null;
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+        return PageRouteBuilder(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              builder(context),
+          transitionDuration: const Duration(milliseconds: 350),
+          reverseTransitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final curved = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+              reverseCurve: Curves.easeInCubic,
+            );
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).animate(curved),
+              child: FadeTransition(
+                opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curved),
+                child: child,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
