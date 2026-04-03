@@ -116,7 +116,7 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
               icon: Icons.folder_shared_outlined,
               isDark: true,
               accentColor: AppColors.softBlue,
-              onTap: () {},
+              onTap: () => Navigator.pushNamed(context, '/panchayat_records'),
             ),
 
             ActionCard(

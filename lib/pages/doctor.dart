@@ -91,11 +91,11 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   const SectionHeader(title: 'Quick Actions'),
                   ActionCard(
                     title: 'Pending Consultations',
-                    subtitle: '3 patients waiting',
+                    subtitle: 'View waiting patients',
                     icon: Icons.pending_actions,
                     isDark: true,
                     accentColor: AppColors.doctorGreen,
-                    onTap: () {},
+                    onTap: () => Navigator.pushNamed(context, '/pending_consultations'),
                   ),
                   ActionCard(
                     title: 'Start Consultation',

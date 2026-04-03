@@ -9,15 +9,15 @@ if (-not $ip) {
 if ($ip) {
     Write-Host "✅ Detected Current IP: $ip" -ForegroundColor Green
     
-    $filePath = "lib/services/auth_service.dart"
+    $filePath = "lib/core/constants.dart"
     if (Test-Path $filePath) {
         $content = Get-Content $filePath
         $found = $false
         
         $newContent = $content | ForEach-Object {
-            if ($_ -match "static const String _baseUrl") {
+            if ($_ -match "static const String kBaseUrl") {
                 $found = $true
-                return "  static const String _baseUrl = 'http://$($ip):3000';"
+                return "  static const String kBaseUrl = 'http://$($ip):3000';"
             }
             return $_
         }
@@ -26,7 +26,7 @@ if ($ip) {
             $newContent | Set-Content $filePath
             Write-Host "✅ Updated $filePath with the new IP." -ForegroundColor Green
         } else {
-            Write-Host "❌ Could not find _baseUrl in $filePath" -ForegroundColor Red
+            Write-Host "❌ Could not find kBaseUrl in $filePath" -ForegroundColor Red
         }
     } else {
         Write-Host "❌ Could not find file: $filePath" -ForegroundColor Red

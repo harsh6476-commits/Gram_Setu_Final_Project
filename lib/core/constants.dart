@@ -7,7 +7,8 @@ class AppConstants {
   /// Base URL of the Node.js backend.
   /// ✅ Flutter Web (browser on same machine as server) → use localhost
   /// ✅ Physical device / emulator on the same Wi-Fi  → use 10.0.1.45
-  static const String kBaseUrl = 'http://localhost:3000';
+  static const String kBaseUrl = 'http://192.168.52.31:3000';
+
 
   // ── Timeouts ───────────────────────────────────────────────────────────────
   static const Duration kRequestTimeout = Duration(seconds: 15);
