@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/PROTO-gram_setu/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/PROTO-gram_setu/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/PROTO-gram_setu/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+<<<<<<< HEAD
+    <orderEntry type="library" name="Dart SDK" level="project" />
+    <orderEntry type="library" name="Flutter Plugins" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
+=======
+    <orderEntry type="library" name="Flutter Plugins" level="project" />
+>>>>>>> 85a2fb6f09f23efcf215dc4fce8d975766eee5c1
+  </component>
+</module>

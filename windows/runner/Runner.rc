@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "gram_setu_01" "\0"
+            VALUE "FileDescription", "gram_setu" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "gram_setu_01" "\0"
+            VALUE "InternalName", "gram_setu" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "gram_setu_01.exe" "\0"
-            VALUE "ProductName", "gram_setu_01" "\0"
+            VALUE "OriginalFilename", "gram_setu.exe" "\0"
+            VALUE "ProductName", "gram_setu" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -1,0 +1,16 @@
+const express = require('express');
+const router = express.Router();
+const authController = require('../controllers/authController');
+
+// Standard Authentication
+router.post('/register', authController.register);
+router.post('/login', authController.login);
+
+// Google Authentication
+router.post('/google', authController.googleLogin);
+
+// Profile CRUD
+router.put('/update', authController.updateProfile);
+router.delete('/delete', authController.deleteProfile);
+
+module.exports = router;
