@@ -18,7 +18,6 @@ class DoctorDashboard extends StatefulWidget {
 
 class _DoctorDashboardState extends State<DoctorDashboard> {
   int _currentIndex = 0;
-  bool _isAvailable = true;
 
   @override
   Widget build(BuildContext context) {
@@ -32,132 +31,96 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         onLogoutTap: () => Navigator.pushReplacementNamed(context, '/home'),
       ),
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 100),
-              child: Column(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Greeting
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Greeting + Availability toggle
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Dr. ${userName.split(' ').first} 👨‍⚕️',
-                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.adaptiveTextPrimary(context)),
-                          ),
-                          SizedBox(height: 4),
-                          Text('${user?['hospitalName'] ?? 'District Hospital'} • MCI: ${user?['mciNumber'] ?? 'N/A'}', style: TextStyle(fontSize: 14, color: AppColors.adaptiveTextSecondary(context))),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(_isAvailable ? 'Available' : 'Offline',
-                              style: TextStyle(fontSize: 11, color: _isAvailable ? AppColors.success : AppColors.adaptiveTextSecondary(context), fontWeight: FontWeight.w600)),
-                          Switch(
-                            value: _isAvailable,
-                            onChanged: (v) => setState(() => _isAvailable = v),
-                            activeThumbColor: AppColors.doctorGreen,
-                          ),
-                        ],
-                      ),
-                    ],
+                  Text(
+                    'Dr. ${userName.split(' ').first} 👨‍⚕️',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.adaptiveTextPrimary(context)),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Stats
-                   Row(
-                    children: [
-                      Expanded(child: StatCard(title: 'Patients Seen', value: '47', icon: Icons.people_outline, bgColor: AppColors.doctorGreen, textColor: Colors.white, iconColor: Colors.white, iconBgColor: Colors.white.withValues(alpha: 0.2))),
-                      const SizedBox(width: 12),
-                      Expanded(child: StatCard(title: 'Hours Given', value: '12h', icon: Icons.schedule, bgColor: AppColors.softBlue, textColor: Colors.white, iconColor: Colors.white, iconBgColor: Colors.white.withValues(alpha: 0.2))),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(child: StatCard(title: 'This Week', value: '3h', icon: Icons.trending_up, bgColor: AppColors.accentYellow, textColor: AppColors.adaptiveTextPrimary(context), iconColor: AppColors.adaptiveTextPrimary(context), iconBgColor: Colors.white.withValues(alpha: 0.4))),
-                      const SizedBox(width: 12),
-                      Expanded(child: StatCard(title: 'Rating', value: '4.8★', icon: Icons.star_outline, bgColor: AppColors.primaryTeal, textColor: Colors.white, iconColor: Colors.white, iconBgColor: Colors.white.withValues(alpha: 0.2))),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Quick Actions
-                  const SectionHeader(title: 'Consultation Management'),
-                  ActionCard(
-                    title: 'View Consultation Requests',
-                    subtitle: 'New requests from patients/Asha',
-                    icon: Icons.pending_actions_outlined,
-                    isDark: true,
-                    accentColor: AppColors.doctorGreen,
-                    onTap: () => Navigator.pushNamed(context, '/consultation_requests'),
-                  ),
-                  ActionCard(
-                    title: 'Pending Consultations',
-                    subtitle: 'Your accepted active sessions',
-                    icon: Icons.assignment_outlined,
-                    isDark: true,
-                    accentColor: AppColors.primaryTeal,
-                    onTap: () => Navigator.pushNamed(context, '/accepted_consultations'),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Today's Schedule
-                  const SectionHeader(title: "Today's Schedule"),
-                  _buildScheduleItem('9:00 AM', 'Rajesh Kumar', 'Fever, headache', 'Completed', AppColors.success),
-                  _buildScheduleItem('10:30 AM', 'Priya Devi', 'Follow-up visit', 'Completed', AppColors.success),
-                  _buildScheduleItem('2:00 PM', 'Amit Singh', 'Chest pain (Urgent)', 'Upcoming', AppColors.warning),
-                  _buildScheduleItem('4:00 PM', 'Sunita Bai', 'Diabetes review', 'Upcoming', AppColors.info),
-                  const SizedBox(height: 24),
-
-                  // Recognition
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: AppColors.doctorGradient,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(Icons.workspace_premium, color: Colors.white, size: 28),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Community Champion', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                              SizedBox(height: 2),
-                              Text('Thank you for 12 hours of service! 🎉', style: TextStyle(color: AppColors.adaptiveTextSecondary(context), fontSize: 13)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 4),
+                  Text('${user?['hospitalName'] ?? 'District Hospital'} • MCI: ${user?['mciNumber'] ?? 'N/A'}', style: TextStyle(fontSize: 14, color: AppColors.adaptiveTextSecondary(context))),
                 ],
               ),
-            ),
-            Positioned(
-              bottom: 20,
-              left: 20,
-              right: 20,
-              child: _buildBottomNavBar(),
-            ),
-          ],
+              const SizedBox(height: 20),
+
+              // Stats
+              Row(
+                children: [
+                  Expanded(child: StatCard(title: 'Patients Seen', value: '47', icon: Icons.people_outline, bgColor: AppColors.doctorGreen, textColor: Colors.white, iconColor: Colors.white, iconBgColor: Colors.white.withValues(alpha: 0.2))),
+                  const SizedBox(width: 12),
+                  Expanded(child: StatCard(title: 'Hours Given', value: '12h', icon: Icons.schedule, bgColor: AppColors.softBlue, textColor: Colors.white, iconColor: Colors.white, iconBgColor: Colors.white.withValues(alpha: 0.2))),
+                ],
+              ),
+              const SizedBox(height: 12),
+              StatCard(title: 'This Week', value: '3h', icon: Icons.trending_up, bgColor: AppColors.accentYellow, textColor: AppColors.adaptiveTextPrimary(context), iconColor: AppColors.adaptiveTextPrimary(context), iconBgColor: Colors.white.withValues(alpha: 0.4)),
+              const SizedBox(height: 24),
+
+              // Quick Actions
+              const SectionHeader(title: 'Consultation Management'),
+              ActionCard(
+                title: 'View Consultation Requests',
+                subtitle: 'New requests from patients/Asha',
+                icon: Icons.pending_actions_outlined,
+                isDark: true,
+                accentColor: AppColors.doctorGreen,
+                onTap: () => Navigator.pushNamed(context, '/consultation_requests'),
+              ),
+              ActionCard(
+                title: 'Pending Consultations',
+                subtitle: 'Your accepted active sessions',
+                icon: Icons.assignment_outlined,
+                isDark: true,
+                accentColor: AppColors.primaryTeal,
+                onTap: () => Navigator.pushNamed(context, '/accepted_consultations'),
+              ),
+              const SizedBox(height: 24),
+
+              // Recognition
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: AppColors.doctorGradient,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.workspace_premium, color: Colors.white, size: 28),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Community Champion', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 2),
+                          Text('Thank you for 12 hours of service! 🎉', style: TextStyle(color: AppColors.adaptiveTextSecondary(context), fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+        child: _buildBottomNavBar(),
       ),
     );
   }
@@ -174,9 +137,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildNavItem(Icons.home_outlined, 'Home', 0),
-          _buildNavItem(Icons.schedule, 'Schedule', 1),
-          _buildNavItem(Icons.people_outline, 'Patients', 2),
-          _buildNavItem(Icons.person_outline, 'Profile', 3),
+          _buildNavItem(Icons.people_outline, 'Patients', 1),
+          _buildNavItem(Icons.person_outline, 'Profile', 2),
         ],
       ),
     ).animate().slideY(begin: 1, delay: 800.ms, duration: 600.ms, curve: Curves.easeOutQuart);
@@ -187,7 +149,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
     return GestureDetector(
       onTap: () {
         setState(() => _currentIndex = index);
-        if (index == 3) Navigator.pushNamed(context, '/profile', arguments: 'doctor');
+        if (index == 2) Navigator.pushNamed(context, '/profile', arguments: 'doctor');
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
@@ -218,48 +180,6 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
             ],
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildScheduleItem(String time, String patient, String reason, String status, Color statusColor) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.adaptiveSurface(context),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.adaptiveBorder(context)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.adaptiveSurfaceVariant(context),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(time, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.adaptiveTextPrimary(context))),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(patient, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.adaptiveTextPrimary(context))),
-                Text(reason, style: TextStyle(fontSize: 12, color: AppColors.adaptiveTextSecondary(context))),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(status, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: statusColor)),
-          ),
-        ],
       ),
     );
   }
