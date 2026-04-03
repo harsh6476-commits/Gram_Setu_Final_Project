@@ -1,6 +1,6 @@
 {
-    "name": "gram_setu_01",
-    "short_name": "gram_setu_01",
+    "name": "gram_setu",
+    "short_name": "gram_setu",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

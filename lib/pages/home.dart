@@ -1,109 +1,155 @@
 import 'package:flutter/material.dart';
-import 'login.dart'; // We will create this file next
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
+import '../core/app_colors.dart';
+import '../core/constants.dart';
+import '../core/theme_provider.dart';
 
-class GramSetuHomePage extends StatelessWidget {
-  const GramSetuHomePage({Key? key}) : super(key: key);
-
-  final Color backgroundColor = const Color(0xFFBCE3DD);
+class RoleSelectionScreen extends StatefulWidget {
+  const RoleSelectionScreen({super.key});
 
   @override
+  State<RoleSelectionScreen> createState() => _RoleSelectionScreenState();
+}
+
+class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
+  @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Section
+              const SizedBox(height: 20),
+              // Top Header Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Gram Setu',
                         style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF0D1B2A),
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: theme.textTheme.displayLarge?.color,
                         ),
-                      ),
-                      const SizedBox(height: 6),
+                      ).animate().fadeIn().slideX(begin: -0.2),
+                      const SizedBox(height: 8),
                       Text(
                         'Healthcare & Rural Network',
                         style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.blueGrey,
+                          fontSize: 16,
+                          color: theme.textTheme.bodyMedium?.color,
                         ),
-                      ),
+                      ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.2),
                     ],
                   ),
                   Row(
                     children: [
-                      _buildHeaderIconButton(Icons.light_mode),
+                      // Circular Theme Toggle Button
+                      IconButton(
+                        onPressed: () => themeProvider.toggleTheme(),
+                        style: IconButton.styleFrom(
+                          backgroundColor: theme.cardTheme.color,
+                          padding: const EdgeInsets.all(12),
+                          shape: const CircleBorder(),
+                        ),
+                        icon: Icon(
+                          themeProvider.isDarkMode
+                              ? Icons.dark_mode
+                              : Icons.light_mode,
+                          color: themeProvider.isDarkMode
+                              ? AppColors.accentYellow
+                              : AppColors.primaryTeal,
+                          size: 24,
+                        ),
+                      ).animate().scale(delay: 400.ms),
                       const SizedBox(width: 12),
-                      _buildHeaderIconButton(Icons.health_and_safety),
+                      Container(
+                        height: 56,
+                        width: 56,
+                        decoration: BoxDecoration(
+                          color: theme.cardTheme.color, // Fixed: white to cardTheme.color
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Image.asset(
+                          AppConstants.kLogoPath,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                                Icons.health_and_safety,
+                                color: AppColors.primaryTeal,
+                                size: 32,
+                              ),
+                        ),
+                      ).animate().scale(delay: 300.ms),
                     ],
-                  )
+                  ),
                 ],
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
 
-              // Grid Section
+              // Roles Grid
               GridView.count(
+                crossAxisCount: 2,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
                 childAspectRatio: 0.85,
                 children: [
-                  // Clickable Patient Card
-                  _buildNavCard(
-                    context: context,
-                    title: 'Patient',
-                    subtitle: 'Health & Consultations',
-                    iconData: Icons.person,
-                    iconColor: Colors.blueAccent,
-                    iconBgColor: Colors.blue.shade50,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PatientLoginPage(),
-                        ),
-                      );
-                    },
+                  _buildRoleCard(
+                    context,
+                    'Patient',
+                    'Health & Consultations',
+                    Icons.person,
+                    AppColors.patientBlue,
+                    'patient',
                   ),
-                  _buildNavCard(
-                    context: context,
-                    title: 'ASHA Worker',
-                    subtitle: 'Community Health',
-                    iconData: Icons.favorite,
-                    iconColor: Colors.pinkAccent,
-                    iconBgColor: Colors.pink.shade50,
+                  _buildRoleCard(
+                    context,
+                    'ASHA Worker',
+                    'Community Health',
+                    Icons.favorite,
+                    AppColors.ashaWorkerPink,
+                    'asha',
                   ),
-                  _buildNavCard(
-                    context: context,
-                    title: 'Doctor',
-                    subtitle: 'Virtual Clinic',
-                    iconData: Icons.medical_services,
-                    iconColor: Colors.teal.shade500,
-                    iconBgColor: Colors.teal.shade50,
+                  _buildRoleCard(
+                    context,
+                    'Doctor',
+                    'Virtual Clinic',
+                    Icons.medical_services,
+                    AppColors.doctorGreen,
+                    'doctor',
                   ),
-                  _buildNavCard(
-                    context: context,
-                    title: 'Panchayat',
-                    subtitle: 'Administration',
-                    iconData: Icons.account_balance,
-                    iconColor: Colors.deepPurpleAccent,
-                    iconBgColor: Colors.deepPurple.shade50,
+                  _buildRoleCard(
+                    context,
+                    'Panchayat',
+                    'Village Administration',
+                    Icons.account_balance,
+                    AppColors.panchayatPurple,
+                    'panchayat',
                   ),
                 ],
-              ),
+              ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
+
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -111,77 +157,75 @@ class GramSetuHomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildNavCard({
-    required BuildContext context,
-    required String title,
-    required String subtitle,
-    required IconData iconData,
-    required Color iconColor,
-    required Color iconBgColor,
-    VoidCallback? onTap,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
+  Widget _buildRoleCard(
+    BuildContext context,
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    String role,
+  ) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: () {
+        if (role == 'panchayat') {
+          Navigator.pushNamed(context, '/panchayat_auth');
+        } else {
+          Navigator.pushNamed(context, '/login', arguments: role);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: theme.cardTheme.color,
           borderRadius: BorderRadius.circular(24),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 32),
+            ),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: iconBgColor,
-                    shape: BoxShape.circle,
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: theme.textTheme.titleMedium?.color,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: Icon(iconData, color: iconColor, size: 28),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
-                        height: 1.2,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: theme.textTheme.bodySmall?.color,
+                    fontSize: 12,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
-          ),
+          ],
         ),
       ),
-    );
-  }
-
-  Widget _buildHeaderIconButton(IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Icon(icon, color: Colors.teal.shade700, size: 24),
     );
   }
 }
