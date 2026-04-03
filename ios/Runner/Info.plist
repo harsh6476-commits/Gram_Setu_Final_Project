@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs your location to automatically fetch your City and State for health registration.</string>
 </dict>
 </plist>
