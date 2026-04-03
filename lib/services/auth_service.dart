@@ -1,16 +1,28 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../core/constants.dart';
 
 class AuthService {
   static final _googleSignIn = GoogleSignIn();
   static const _storage = FlutterSecureStorage();
 
-  // Current laptop IP: 192.168.52.31
-  // Use your current laptop's local IP address so phones can connect over Wi-Fi.
-  static const String _baseUrl = 'http://192.168.52.31:3000';
-  static const String _googleAuthUrl = '$_baseUrl/api/auth/google';
+  // Base URL is managed centrally in lib/core/constants.dart
+  static String get _baseUrl => AppConstants.kBaseUrl;
+  static String get _googleAuthUrl => '$_baseUrl/api/auth/google';
+
+  /// Converts raw exceptions into user-friendly messages.
+  static Exception _handleError(Object e) {
+    if (e is TimeoutException) {
+      return Exception(
+        'Server unreachable. Please check your network connection and ensure the backend is running.',
+      );
+    }
+    if (e is Exception) return e;
+    return Exception(e.toString());
+  }
 
   static Future<Map<String, dynamic>?> signInWithGoogle(String role) async {
     try {
@@ -40,7 +52,7 @@ class AuthService {
         throw Exception(data['message'] ?? 'Backend verification failed');
       }
     } catch (e) {
-      rethrow;
+      throw _handleError(e);
     }
   }
 
@@ -73,9 +85,7 @@ class AuthService {
               'password': password,
             }),
           )
-          .timeout(
-            const Duration(seconds: 15),
-          ); // Add a timeout to prevent infinite buffering
+          .timeout(AppConstants.kRequestTimeout);
 
       final data = jsonDecode(response.body);
       print('📡 Registration Response (${response.statusCode}): $data');
@@ -87,7 +97,7 @@ class AuthService {
         throw Exception(data['message'] ?? 'Registration failed');
       }
     } catch (e) {
-      rethrow;
+      throw _handleError(e);
     }
   }
 
@@ -115,7 +125,7 @@ class AuthService {
               'role': 'doctor',
             }),
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(AppConstants.kRequestTimeout);
 
       final data = jsonDecode(response.body);
       print('📡 Doctor Registration Response (${response.statusCode}): $data');
@@ -127,7 +137,7 @@ class AuthService {
         throw Exception(data['message'] ?? 'Registration failed');
       }
     } catch (e) {
-      rethrow;
+      throw _handleError(e);
     }
   }
 
@@ -153,7 +163,7 @@ class AuthService {
               'role': 'asha',
             }),
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(AppConstants.kRequestTimeout);
 
       final data = jsonDecode(response.body);
       print('📡 ASHA Registration Response (${response.statusCode}): $data');
@@ -165,7 +175,7 @@ class AuthService {
         throw Exception(data['message'] ?? 'Registration failed');
       }
     } catch (e) {
-      rethrow;
+      throw _handleError(e);
     }
   }
 
@@ -195,7 +205,7 @@ class AuthService {
           'password': password,
           'role': 'panchayat',
         }),
-      ).timeout(const Duration(seconds: 15));
+      ).timeout(AppConstants.kRequestTimeout);
 
       final data = jsonDecode(response.body);
       print('📡 Panchayat Registration Response (${response.statusCode}): $data');
@@ -207,7 +217,7 @@ class AuthService {
         throw Exception(data['message'] ?? 'Registration failed');
       }
     } catch (e) {
-      rethrow;
+      throw _handleError(e);
     }
   }
 
@@ -225,7 +235,7 @@ class AuthService {
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'identifier': identifier, 'password': password}),
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(AppConstants.kRequestTimeout);
 
       final data = jsonDecode(response.body);
       print('📡 Login Response (${response.statusCode}): $data');
@@ -237,7 +247,7 @@ class AuthService {
         throw Exception(data['message'] ?? 'Login failed');
       }
     } catch (e) {
-      rethrow;
+      throw _handleError(e);
     }
   }
 
@@ -257,7 +267,7 @@ class AuthService {
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(data),
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(AppConstants.kRequestTimeout);
 
       final resData = jsonDecode(response.body);
 
@@ -267,7 +277,7 @@ class AuthService {
         throw Exception(resData['message'] ?? 'Update failed');
       }
     } catch (e) {
-      rethrow;
+      throw _handleError(e);
     }
   }
 
@@ -280,7 +290,7 @@ class AuthService {
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(identifiers),
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(AppConstants.kRequestTimeout);
 
       final resData = jsonDecode(response.body);
 
@@ -291,7 +301,7 @@ class AuthService {
         throw Exception(resData['message'] ?? 'Deletion failed');
       }
     } catch (e) {
-      rethrow;
+      throw _handleError(e);
     }
   }
 

@@ -61,7 +61,7 @@ class GramSetuApp extends StatelessWidget {
         final routes = <String, WidgetBuilder>{
           '/splash': (context) => const SplashScreen(),
           '/home': (context) => const RoleSelectionScreen(),
-          '/login': (context) => const LoginScreen(),
+          '/login': (context) => const PatientLoginPage(),
           '/patient': (context) => const PatientDashboard(),
           '/doctor': (context) => const DoctorDashboard(),
           '/asha_worker': (context) => const AshaWorkerDashboard(),
