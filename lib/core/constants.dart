@@ -6,14 +6,17 @@ class AppConstants {
   AppConstants._(); // prevent instantiation
 
   // ── API ────────────────────────────────────────────────────────────────────
-  /// Set this to true ONLY if you want to connect to a different computer's backend (Physical Device).
+  /// 1. Set this to true to use a Public Tunnel (best for mobile demos & judges).
+  static const bool useTunnel = false; 
+  static const String tunnelUrl = 'https://YOUR_TUNNEL_URL.loca.lt'; // Paste URL from 'npm run tunnel'
+
+  /// 2. If true, all systems connect to the _manualIp below.
   static const bool usePhysicalIp = false; 
-  
-  /// The LAN IP if needed (only used when usePhysicalIp is true).
   static const String _manualIp = 'localhost'; 
 
   /// Base URL is resolved automatically for any machine running it:
   static String get baseUrl {
+    if (useTunnel) return tunnelUrl;
     if (usePhysicalIp) return 'http://$_manualIp:3000';
     
     if (kIsWeb) {
