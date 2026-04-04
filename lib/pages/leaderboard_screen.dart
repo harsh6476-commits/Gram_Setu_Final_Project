@@ -17,6 +17,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   bool _isLoading = true;
   List<dynamic> _leaderboard = [];
   Map<String, dynamic>? _myStats;
+  bool _isAscending = false;
 
   @override
   void initState() {
@@ -31,7 +32,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final response = await ApiService.get('/doctor/leaderboard');
+      final order = _isAscending ? 'asc' : 'desc';
+      final response = await ApiService.get('/doctor/leaderboard?order=$order');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (mounted) {
@@ -40,6 +42,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             final index = _leaderboard.indexWhere((d) => d['doctorId'] == doctorId);
             if (index != -1) {
               _myStats = _leaderboard[index];
+            } else {
+              _myStats = null;
             }
             _isLoading = false;
           });
@@ -49,6 +53,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       print('Leaderboard Fetch Error: $e');
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _toggleOrder() {
+    setState(() {
+      _isAscending = !_isAscending;
+    });
+    _fetchLeaderboard();
   }
 
   @override
@@ -68,6 +79,21 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         : Column(
             children: [
               _buildMySummaryHeader(theme),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('LEADERBOARD', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2, color: AppColors.adaptiveTextSecondary(context))),
+                    TextButton.icon(
+                       onPressed: _toggleOrder,
+                       icon: Icon(_isAscending ? Icons.arrow_upward : Icons.arrow_downward, size: 16),
+                       label: Text(_isAscending ? 'Ascending' : 'Descending', style: const TextStyle(fontSize: 12)),
+                       style: TextButton.styleFrom(foregroundColor: AppColors.primaryTeal),
+                    ),
+                  ],
+                ),
+              ),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: _fetchLeaderboard,
@@ -75,7 +101,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     padding: const EdgeInsets.all(16),
                     itemCount: _leaderboard.length,
                     itemBuilder: (context, index) {
-                      final entry = _leaderboard[index];
+                      final entry = (index < _leaderboard.length) ? _leaderboard[index] : {};
                       final isMe = entry['doctorId'] == doctorId;
                       final rank = entry['rank'] ?? (index + 1);
 
@@ -104,9 +130,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _summaryItem('My Rank', '#${_myStats!['rank']}', Icons.leaderboard_outlined, AppColors.accentYellow),
+              _summaryItem('My Rank', '#${_myStats!['rank'] ?? '-'}', Icons.leaderboard_outlined, AppColors.accentYellow),
               Container(height: 40, width: 1, color: AppColors.adaptiveBorder(context)),
-              _summaryItem('Total Hours', '${_myStats!['totalHours']}h', Icons.schedule_outlined, AppColors.softBlue),
+              _summaryItem('Total Hours', '${_myStats!['totalHours'] ?? 0}h', Icons.schedule_outlined, AppColors.softBlue),
             ],
           ),
         ],
@@ -132,13 +158,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isMe ? AppColors.accentYellow.withValues(alpha: 0.05) : AppColors.adaptiveSurface(context),
+        color: isMe ? AppColors.accentYellow.withOpacity(0.05) : AppColors.adaptiveSurface(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isMe ? AppColors.accentYellow : AppColors.adaptiveBorder(context),
           width: isMe ? 2 : 1,
         ),
-        boxShadow: isMe ? [BoxShadow(color: AppColors.accentYellow.withValues(alpha: 0.1), blurRadius: 10)] : null,
+        boxShadow: isMe ? [BoxShadow(color: AppColors.accentYellow.withOpacity(0.1), blurRadius: 10)] : null,
       ),
       child: Row(
         children: [
@@ -162,7 +188,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           const SizedBox(width: 16),
           CircleAvatar(
             radius: 20,
-            backgroundColor: isMe ? AppColors.accentYellow.withValues(alpha: 0.2) : AppColors.primaryTeal.withValues(alpha: 0.1),
+            backgroundColor: isMe ? AppColors.accentYellow.withOpacity(0.2) : AppColors.primaryTeal.withOpacity(0.1),
             child: Icon(Icons.person, color: isMe ? AppColors.adaptiveTextPrimary(context) : AppColors.primaryTeal, size: 22),
           ),
           const SizedBox(width: 16),
@@ -173,7 +199,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 Row(
                   children: [
                     Text(
-                      isMe ? '${entry['doctorName']} (Me)' : 'Dr. ${entry['doctorName']}',
+                      isMe ? '${entry['doctorName'] ?? ''} (Me)' : 'Dr. ${entry['doctorName'] ?? ''}',
                       style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.adaptiveTextPrimary(context)),
                     ),
                     if (isChampion) ...[
@@ -193,7 +219,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${entry['totalHours']}h',
+                '${entry['totalHours'] ?? 0}h',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primaryTeal),
               ),
               const Text('Contribution', style: TextStyle(fontSize: 9, color: Colors.grey, fontWeight: FontWeight.bold)),

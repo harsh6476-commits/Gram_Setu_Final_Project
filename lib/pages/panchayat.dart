@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
 import '../core/user_provider.dart';
+import '../services/api_service.dart';
 import '../widgets/gram_app_bar.dart';
 import '../widgets/action_card.dart';
 import '../widgets/section_header.dart';
+import '../widgets/stat_card.dart';
 
 class PanchayatDashboard extends StatefulWidget {
   const PanchayatDashboard({super.key});
@@ -15,6 +18,48 @@ class PanchayatDashboard extends StatefulWidget {
 
 class _PanchayatDashboardState extends State<PanchayatDashboard> {
   int _currentIndex = 0;
+  bool _isLoading = true;
+  final Map<String, dynamic> _stats = {
+    'totalPatients': 0,
+    'activeCases': 0,
+    'totalDoctors': 0,
+    'totalAshaWorkers': 0,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSummaryStats();
+  }
+
+  Future<void> _fetchSummaryStats() async {
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    if (user == null) return;
+    
+    final village = user['village'] ?? '';
+    final block = user['block'] ?? '';
+    
+    try {
+      final villageEncoded = Uri.encodeComponent(village);
+      final blockEncoded = Uri.encodeComponent(block);
+      final response = await ApiService.get('/stats/village?village=$villageEncoded&block=$blockEncoded');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (mounted) {
+          setState(() {
+            _stats['totalPatients'] = data['totalPatients'] ?? 0;
+            _stats['activeCases'] = data['activeCases'] ?? 0;
+            _stats['totalDoctors'] = data['totalDoctors'] ?? 0;
+            _stats['totalAshaWorkers'] = data['totalAshaWorkers'] ?? 0;
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Stats Fetch Error: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,48 +73,109 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
         onLogoutTap: () => Navigator.pushReplacementNamed(context, '/home'),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Greeting Section
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Namaste, $userName 🙏',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.adaptiveTextPrimary(context)),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Panchayat Body • ID: ${user?['panchayatId'] ?? 'N/A'}', 
-                    style: TextStyle(fontSize: 14, color: AppColors.adaptiveTextSecondary(context))
+        child: RefreshIndicator(
+          onRefresh: _fetchSummaryStats,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Greeting Section
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Namaste, $userName 🙏',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.adaptiveTextPrimary(context)),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Panchayat Body • ID: ${user?['panchayatId'] ?? 'N/A'}', 
+                      style: TextStyle(fontSize: 14, color: AppColors.adaptiveTextSecondary(context))
+                    ),
+                    Text(
+                      '${user?['village'] ?? ''}${user?['village'] != null && user?['block'] != null ? ', ' : ''}${user?['block'] ?? ''}',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primaryTeal),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // Village Health Summary Cards
+                const SectionHeader(title: 'Village Health Summary'),
+                const SizedBox(height: 12),
+                _isLoading 
+                ? const Center(child: CircularProgressIndicator())
+                : Row(
+                  children: [
+                    Expanded(
+                      child: StatCard(
+                        title: 'Patients', 
+                        value: '${_stats['totalPatients']}', 
+                        icon: Icons.people_outline, 
+                        bgColor: AppColors.primaryTeal, 
+                        textColor: Colors.white, 
+                        iconColor: Colors.white, 
+                        iconBgColor: Colors.white.withOpacity(0.2)
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: StatCard(
+                        title: 'Active Cases', 
+                        value: '${_stats['activeCases']}', 
+                        icon: Icons.medical_services_outlined, 
+                        bgColor: AppColors.emergencyRed, 
+                        textColor: Colors.white, 
+                        iconColor: Colors.white, 
+                        iconBgColor: Colors.white.withOpacity(0.2)
+                      ),
+                    ),
+                  ],
+                ),
+                if (!_isLoading) ...[
+                  const SizedBox(height: 12),
+                  StatCard(
+                    title: 'Health Personnel', 
+                    value: '${_stats['totalDoctors']} Doctors, ${_stats['totalAshaWorkers']} ASHAs', 
+                    icon: Icons.local_hospital_outlined, 
+                    bgColor: AppColors.softBlue, 
+                    textColor: Colors.white, 
+                    iconColor: Colors.white, 
+                    iconBgColor: Colors.white.withOpacity(0.2)
                   ),
                 ],
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-              const SectionHeader(title: 'Administrative Controls'),
-              ActionCard(
-                title: 'View Health Records',
-                subtitle: 'Enter Patient UID to retrieve historical data',
-                icon: Icons.history_edu_outlined,
-                isDark: true,
-                accentColor: AppColors.primaryTeal,
-                onTap: () => Navigator.pushNamed(context, '/search_patient'),
-              ),
-              ActionCard(
-                title: 'Village Statics',
-                subtitle: 'View overall village health analytics',
-                icon: Icons.analytics_outlined,
-                isDark: true,
-                accentColor: AppColors.softBlue,
-                onTap: () => Navigator.pushNamed(context, '/panchayat_records'),
-              ),
-              
-              const SizedBox(height: 80),
-            ],
+                const SectionHeader(title: 'Administrative Controls'),
+                ActionCard(
+                  title: 'View Health Records',
+                  subtitle: 'Enter Patient UID to retrieve historical data',
+                  icon: Icons.history_edu_outlined,
+                  isDark: true,
+                  accentColor: AppColors.primaryTeal,
+                  onTap: () => Navigator.pushNamed(context, '/search_patient'),
+                ),
+                ActionCard(
+                  title: 'Village Statics',
+                  subtitle: 'View overall village health analytics',
+                  icon: Icons.analytics_outlined,
+                  isDark: true,
+                  accentColor: AppColors.softBlue,
+                  onTap: () => Navigator.pushNamed(context, '/panchayat_records'),
+                ),
+                ActionCard(
+                  title: 'View Prescriptions',
+                  subtitle: 'Search & view patient prescription history',
+                  icon: Icons.description_outlined,
+                  isDark: true,
+                  accentColor: AppColors.panchayatPurple,
+                  onTap: () => Navigator.pushNamed(context, '/view_prescription_search'),
+                ),
+                const SizedBox(height: 80),
+              ],
+            ),
           ),
         ),
       ),
@@ -88,7 +194,7 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
         borderRadius: BorderRadius.circular(40),
         border: Border.all(color: AppColors.adaptiveBorder(context)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 4))
+          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 4))
         ]
       ),
       child: Row(
@@ -114,7 +220,6 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
         if (index == 1) {
           await Navigator.pushNamed(context, '/search_patient');
         } else if (index == 2) {
-          // Push Profile as separate page
           await Navigator.pushNamed(context, '/profile', arguments: 'panchayat');
         }
 
@@ -127,7 +232,7 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: isSelected
             ? BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                color: AppColors.primaryTeal.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(30),
               )
             : null,

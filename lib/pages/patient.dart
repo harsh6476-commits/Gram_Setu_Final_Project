@@ -88,7 +88,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: AppColors.adaptiveBorder(context)),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
+                          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
                         ]
                       ),
                       child: Column(
@@ -114,7 +114,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                         bgColor: Colors.teal,
                         textColor: Colors.white,
                         iconColor: Colors.white,
-                        iconBgColor: Colors.white.withValues(alpha: 0.2),
+                        iconBgColor: Colors.white.withOpacity(0.2),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -126,7 +126,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                         bgColor: Colors.orange,
                         textColor: Colors.white,
                         iconColor: Colors.white,
-                        iconBgColor: Colors.white.withValues(alpha: 0.2),
+                        iconBgColor: Colors.white.withOpacity(0.2),
                       ),
                     ),
                   ],
@@ -150,7 +150,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   icon: Icons.description_outlined,
                   isDark: true,
                   accentColor: AppColors.softBlue,
-                  onTap: () => Navigator.pushNamed(context, '/prescription_history'),
+                  onTap: () => Navigator.pushNamed(context, '/prescriptions'),
                 ),
                 
                 const SizedBox(height: 60),
@@ -211,7 +211,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: isSelected
             ? BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                color: AppColors.primaryTeal.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(30),
               )
             : null,

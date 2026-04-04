@@ -128,7 +128,7 @@ class _PrescriptionViewerState extends State<PrescriptionViewer> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.adaptiveBorder(context)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 6))
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 6))
         ]
       ),
       child: Column(
@@ -185,15 +185,15 @@ class _PrescriptionViewerState extends State<PrescriptionViewer> {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.adaptiveBackground(context).withValues(alpha: 0.5),
+              color: AppColors.adaptiveBackground(context).withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.adaptiveBorder(context).withValues(alpha: 0.4)),
+              border: Border.all(color: AppColors.adaptiveBorder(context).withOpacity(0.4)),
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: AppColors.primaryTeal.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: AppColors.primaryTeal.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
                   child: const Icon(Icons.medication_rounded, size: 18, color: AppColors.primaryTeal),
                 ),
                 const SizedBox(width: 14),
@@ -217,9 +217,9 @@ class _PrescriptionViewerState extends State<PrescriptionViewer> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.05),
+                color: Colors.amber.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                border: Border.all(color: Colors.amber.withOpacity(0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

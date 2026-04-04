@@ -18,7 +18,6 @@ class _AshaWorkerDashboardState extends State<AshaWorkerDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final user = Provider.of<UserProvider>(context).user;
     final userName = user?['name'] ?? 'ASHA Worker';
 
@@ -47,6 +46,10 @@ class _AshaWorkerDashboardState extends State<AshaWorkerDashboard> {
                     'Village Service • ID: ${user?['ashaId'] ?? 'N/A'}', 
                     style: TextStyle(fontSize: 14, color: AppColors.adaptiveTextSecondary(context))
                   ),
+                  Text(
+                    '${user?['village'] ?? ''}${user?['village'] != null && user?['block'] != null ? ', ' : ''}${user?['block'] ?? ''}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primaryTeal),
+                  ),
                 ],
               ),
               const SizedBox(height: 32),
@@ -67,6 +70,14 @@ class _AshaWorkerDashboardState extends State<AshaWorkerDashboard> {
                 isDark: true,
                 accentColor: AppColors.softBlue,
                 onTap: () => Navigator.pushNamed(context, '/new_patient_registration'),
+              ),
+              ActionCard(
+                title: 'View Prescriptions',
+                subtitle: 'Search & view patient prescription history',
+                icon: Icons.description_outlined,
+                isDark: true,
+                accentColor: AppColors.panchayatPurple,
+                onTap: () => Navigator.pushNamed(context, '/view_prescription_search'),
               ),
               ActionCard(
                 title: 'Record Vitals',
@@ -97,7 +108,7 @@ class _AshaWorkerDashboardState extends State<AshaWorkerDashboard> {
         borderRadius: BorderRadius.circular(40),
         border: Border.all(color: AppColors.adaptiveBorder(context)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 4))
+          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 4))
         ]
       ),
       child: Row(
@@ -121,10 +132,8 @@ class _AshaWorkerDashboardState extends State<AshaWorkerDashboard> {
         }
 
         if (index == 1) {
-          // Search Patient (UID)
           await Navigator.pushNamed(context, '/search_patient');
         } else if (index == 2) {
-          // Profile (Push to new page)
           await Navigator.pushNamed(context, '/profile', arguments: 'asha');
         }
 
@@ -137,7 +146,7 @@ class _AshaWorkerDashboardState extends State<AshaWorkerDashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: isSelected
             ? BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                color: AppColors.primaryTeal.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(30),
               )
             : null,

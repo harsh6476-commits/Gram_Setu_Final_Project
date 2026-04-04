@@ -35,7 +35,7 @@ class _AcceptedConsultationsScreenState extends State<AcceptedConsultationsScree
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          _consultations = data['consultations'];
+          _consultations = (data['consultations'] as List? ?? []);
           _isLoading = false;
         });
       } else {

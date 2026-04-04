@@ -98,6 +98,10 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       '${user?['hospitalName'] ?? 'District Hospital'} • MCI: ${user?['mciNumber'] ?? 'N/A'}', 
                       style: TextStyle(fontSize: 14, color: AppColors.adaptiveTextSecondary(context))
                     ),
+                    Text(
+                      '${user?['village'] ?? ''}${user?['village'] != null && user?['block'] != null ? ', ' : ''}${user?['block'] ?? ''}',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.doctorGreen),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -113,7 +117,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                         bgColor: AppColors.doctorGreen, 
                         textColor: Colors.white, 
                         iconColor: Colors.white, 
-                        iconBgColor: Colors.white.withValues(alpha: 0.2)
+                        iconBgColor: Colors.white.withOpacity(0.2)
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -125,7 +129,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                         bgColor: AppColors.softBlue, 
                         textColor: Colors.white, 
                         iconColor: Colors.white, 
-                        iconBgColor: Colors.white.withValues(alpha: 0.2)
+                        iconBgColor: Colors.white.withOpacity(0.2)
                       ),
                     ),
                   ],
@@ -138,7 +142,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   bgColor: AppColors.accentYellow, 
                   textColor: AppColors.adaptiveTextPrimary(context), 
                   iconColor: AppColors.adaptiveTextPrimary(context), 
-                  iconBgColor: Colors.white.withValues(alpha: 0.4)
+                  iconBgColor: Colors.white.withOpacity(0.4)
                 ),
                 const SizedBox(height: 32),
 
@@ -162,6 +166,24 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   onTap: () => Navigator.pushNamed(context, '/accepted_consultations'),
                 ).animate().fadeIn(delay: 200.ms),
 
+                ActionCard(
+                  title: 'Search Patient',
+                  subtitle: 'Enter Patient UID to retrieve the complete medical profile',
+                  icon: Icons.person_search_outlined,
+                  isDark: true,
+                  accentColor: AppColors.softBlue,
+                  onTap: () => Navigator.pushNamed(context, '/search_patient'),
+                ).animate().fadeIn(delay: 300.ms),
+
+                ActionCard(
+                  title: 'View Prescriptions',
+                  subtitle: 'Search & view patient prescription history',
+                  icon: Icons.description_outlined,
+                  isDark: true,
+                  accentColor: AppColors.panchayatPurple,
+                  onTap: () => Navigator.pushNamed(context, '/view_prescription_search'),
+                ).animate().fadeIn(delay: 350.ms),
+
                 const SizedBox(height: 32),
 
                 // Community Champion Card
@@ -173,7 +195,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       gradient: AppColors.doctorGradient,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
-                        BoxShadow(color: AppColors.doctorGreen.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))
+                        BoxShadow(color: AppColors.doctorGreen.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))
                       ],
                       border: (_topDoctor!['doctorId'] == user?['id'] || _topDoctor!['doctorId'] == user?['_id'])
                         ? Border.all(color: Colors.amber, width: 2)
@@ -183,7 +205,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+                          decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
                           child: const Text('🥇', style: TextStyle(fontSize: 24)),
                         ),
                         const SizedBox(width: 16),
@@ -199,7 +221,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                               ),
                               Text(
                                 '${_topDoctor!['hospital']}', 
-                                style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 13)
+                                style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13)
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -234,16 +256,15 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         borderRadius: BorderRadius.circular(40),
         border: Border.all(color: AppColors.adaptiveBorder(context)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 4))
+          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 4))
         ]
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildNavItem(Icons.home, 'Home', 0),
-          _buildNavItem(Icons.person_search_outlined, 'Search', 1),
-          _buildNavItem(Icons.workspace_premium_outlined, 'Rewards', 2),
-          _buildNavItem(Icons.person_outline, 'Profile', 3),
+          _buildNavItem(Icons.workspace_premium_outlined, 'Rewards', 1),
+          _buildNavItem(Icons.person_outline, 'Profile', 2),
         ],
       ),
     );
@@ -260,12 +281,9 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
 
         switch (index) {
           case 1:
-            await Navigator.pushNamed(context, '/search_patient');
-            break;
-          case 2:
             await Navigator.pushNamed(context, '/leaderboard');
             break;
-          case 3:
+          case 2:
             await Navigator.pushNamed(context, '/profile', arguments: 'doctor');
             break;
         }
@@ -279,7 +297,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: isSelected
             ? BoxDecoration(
-                color: AppColors.accentYellow.withValues(alpha: 0.2),
+                color: AppColors.accentYellow.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(30),
               )
             : null,
