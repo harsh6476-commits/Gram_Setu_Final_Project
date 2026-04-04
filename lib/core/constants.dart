@@ -6,27 +6,34 @@ class AppConstants {
   AppConstants._(); // prevent instantiation
 
   // ── API ────────────────────────────────────────────────────────────────────
-  /// Your laptop's LAN IP for physical device testing (e.g., 192.168.1.x).
-  /// Run `ipconfig` on Windows to find it.
-  static const String _lanIp = '192.168.52.31';
-
+  /// 1. Set this to true to use the hardcoded IP below (useful for physical devices).
+  static const bool usePhysicalIp = false; 
   
+  /// 2. The LAN IP of the computer running the backend (check backend console log).
+  static const String _hostIp = '192.168.53.234'; 
 
-  /// Base URL is resolved automatically per platform:
-  ///   • Flutter Web          → http://<host>:3000 (auto-detects host)
-  ///   • Android Emulator     → http://10.0.2.2:3000
-  ///   • Physical Device      → http://<_lanIp>:3000
+  /// Base URL is resolved automatically based on the platform:
   static String get baseUrl {
+    if (usePhysicalIp) return 'http://$_hostIp:3000';
+    
     if (kIsWeb) {
-      // Auto-detects the host the Flutter web app was served from.
-      // Since the app and backend run on the same machine, this always points
-      // to the right server — whether accessed from localhost OR via LAN IP.
-      final host = Uri.base.host; // e.g. "localhost" or "192.168.52.31"
+      // Browsers use the same host they are served from.
+      final host = Uri.base.host.isEmpty ? 'localhost' : Uri.base.host;
       return 'http://$host:3000';
     }
-    // Note: Platform.isAndroid will throw on web, but we handle kIsWeb above.
-    if (Platform.isAndroid) return 'http://10.0.2.2:3000';
-    return 'http://$_lanIp:3000';
+    
+    if (Platform.isAndroid) {
+      // Official Android Emulator uses 10.0.2.2 for host loopback.
+      return 'http://10.0.2.2:3000';
+    }
+    
+    if (Platform.isIOS || Platform.isMacOS) {
+      // iOS simulators share the host network stack.
+      return 'http://localhost:3000';
+    }
+
+    // Default fallback for physical devices or other platforms.
+    return 'http://$_hostIp:3000';
   }
 
   // ── Timeouts ───────────────────────────────────────────────────────────────
