@@ -89,4 +89,35 @@ router.get('/asha', async (req, res) => {
     }
 });
 
+// GET /api/stats/pharmacist?pharmacistId=X
+router.get('/pharmacist', async (req, res) => {
+    try {
+        const { pharmacistId } = req.query;
+        if (!pharmacistId) {
+            return res.status(400).json({ success: false, message: 'pharmacistId is required' });
+        }
+
+        const Medicine = require('../models/Medicine');
+        const MedicineRequest = require('../models/MedicineRequest');
+
+        const totalMedicines = await Medicine.countDocuments({ pharmacistId });
+        const lowStock = await Medicine.countDocuments({ pharmacistId, stockQuantity: { $gt: 0, $lt: 10 } });
+        const outOfStock = await Medicine.countDocuments({ pharmacistId, stockQuantity: 0 });
+        const pendingRequests = await MedicineRequest.countDocuments({ pharmacistId, status: 'Pending' });
+        const completedOrders = await MedicineRequest.countDocuments({ pharmacistId, status: 'Delivered' });
+
+        res.status(200).json({
+            success: true,
+            totalMedicines,
+            lowStock,
+            outOfStock,
+            pendingRequests,
+            completedOrders
+        });
+    } catch (error) {
+        console.error('Pharmacist Stats Error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 module.exports = router;

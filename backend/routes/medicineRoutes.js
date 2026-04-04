@@ -1,18 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const Medicine = require('../models/Medicine');
+const MedicineRequest = require('../models/MedicineRequest');
 
 // Add a new medicine
 router.post('/add', async (req, res) => {
   try {
-    const { name, expiryDate, availability, price, description, manufacturer, pharmacistId } = req.body;
+    const { name, genericName, brandName, category, expiryDate, availability, price, stockQuantity, description, manufacturer, prescriptionRequired, imageUrl, pharmacistId } = req.body;
+    
+    // Check if medicine already exists with same name and brand
+    const existing = await Medicine.findOne({ name: name, brandName: brandName });
+    if (existing) {
+        return res.status(449).json({ message: 'Medicine already exists', medicine: existing });
+    }
+
     const newMedicine = new Medicine({
-      name,
-      expiryDate,
-      availability: availability !== undefined ? availability : true,
-      price,
-      description,
-      manufacturer,
+      name, genericName, brandName, category, 
+      expiryDate, 
+      availability: availability !== undefined ? availability : true, 
+      price, stockQuantity,
+      description, manufacturer, prescriptionRequired, imageUrl,
       pharmacistId
     });
     await newMedicine.save();
@@ -35,7 +42,14 @@ router.get('/all', async (req, res) => {
 // Search medicines by name
 router.get('/search/:name', async (req, res) => {
   try {
-    const medicines = await Medicine.find({ name: { $regex: req.params.name, $options: 'i' } });
+    const query = req.params.name;
+    const medicines = await Medicine.find({ 
+        $or: [
+            { name: { $regex: query, $options: 'i' } },
+            { genericName: { $regex: query, $options: 'i' } },
+            { brandName: { $regex: query, $options: 'i' } }
+        ]
+    });
     res.status(200).json(medicines);
   } catch (error) {
     res.status(500).json({ message: 'Error searching medicines', error: error.message });
@@ -46,7 +60,7 @@ router.get('/search/:name', async (req, res) => {
 router.put('/update/:id', async (req, res) => {
   try {
     const updatedMedicine = await Medicine.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedMedicine) return res.status(444).json({ message: 'Medicine not found' });
+    if (!updatedMedicine) return res.status(404).json({ message: 'Medicine not found' });
     res.status(200).json({ message: 'Medicine updated successfully', medicine: updatedMedicine });
   } catch (error) {
     res.status(500).json({ message: 'Error updating medicine', error: error.message });
@@ -57,11 +71,48 @@ router.put('/update/:id', async (req, res) => {
 router.delete('/delete/:id', async (req, res) => {
   try {
     const deletedMedicine = await Medicine.findByIdAndDelete(req.params.id);
-    if (!deletedMedicine) return res.status(444).json({ message: 'Medicine not found' });
+    if (!deletedMedicine) return res.status(404).json({ message: 'Medicine not found' });
     res.status(200).json({ message: 'Medicine deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting medicine', error: error.message });
   }
+});
+
+// Medicine Requests
+router.post('/request', async (req, res) => {
+    try {
+        const nr = new MedicineRequest(req.body);
+        await nr.save();
+        res.status(201).json({ message: 'Request submitted', request: nr });
+    } catch (e) {
+        res.status(500).json({ message: 'Error requesting medicine', error: e.message });
+    }
+});
+
+router.get('/requests', async (req, res) => {
+    try {
+        const { pharmacistId, status } = req.query;
+        let filter = {};
+        if (pharmacistId) filter.pharmacistId = pharmacistId;
+        if (status) filter.status = status;
+
+        const requests = await MedicineRequest.find(filter)
+            .populate('medicineId')
+            .sort({ createdAt: -1 });
+        res.status(200).json(requests);
+    } catch (e) {
+        res.status(500).json({ message: 'Error fetching requests', error: e.message });
+    }
+});
+
+router.put('/request/:id', async (req, res) => {
+    try {
+        const updated = await MedicineRequest.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updated) return res.status(404).json({ message: 'Request not found' });
+        res.status(200).json({ message: 'Request updated', request: updated });
+    } catch (e) {
+        res.status(500).json({ message: 'Error updating request', error: e.message });
+    }
 });
 
 module.exports = router;

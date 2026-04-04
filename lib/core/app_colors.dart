@@ -38,6 +38,7 @@ class AppColors {
   static const Color doctorGreen = Color(0xFF10B981);
   static const Color panchayatPurple = Color(0xFFA855F7);
   static const Color tealAccent = Color(0xFF14B8A6);
+  static const Color softPurple = Color(0xFF8B5CF6);
 
   // Additional role / status colors
   static const Color success = Color(0xFF10B981);
