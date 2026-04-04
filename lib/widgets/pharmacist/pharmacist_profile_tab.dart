@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_colors.dart';
 import '../../core/user_provider.dart';
-import '../../widgets/translated_text.dart';
+import '../translated_text.dart';
 
 class PharmacistProfileTab extends StatelessWidget {
-  const PharmacistProfileTab({super.key});
+  final Map<String, dynamic> userData;
+  const PharmacistProfileTab({super.key, required this.userData});
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserProvider>(context).user;
-    
+    final pharmacistId = userData['pharmacistId'] ?? 'ID-N/A';
+    final village = userData['village'] ?? userData['location']?['village'] ?? 'Not set';
+    final block = userData['block'] ?? userData['location']?['block'] ?? 'Not set';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -21,27 +24,60 @@ class PharmacistProfileTab extends StatelessWidget {
             child: const Icon(Icons.person, size: 50, color: AppColors.primaryTeal),
           ),
           const SizedBox(height: 16),
-          Text(user?['name'] ?? 'Pharmacist', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          Text(user?['role']?.toString().toUpperCase() ?? 'PHARMACIST', style: const TextStyle(fontSize: 13, color: Colors.grey, letterSpacing: 1.2)),
-          
+          Text(
+            userData['name'] ?? 'Pharmacist',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.adaptiveTextPrimary(context),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.primaryTeal.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'Pharmacist ID: $pharmacistId',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryTeal,
+              ),
+            ),
+          ),
           const SizedBox(height: 32),
-          
-          _buildInfoTile(context, 'Name', user?['name'] ?? 'N/A', Icons.person_outline),
-          _buildInfoTile(context, 'Pharmacist ID', user?['pharmacistId'] ?? 'N/A', Icons.badge_outlined),
-          _buildInfoTile(context, 'Contact', user?['phone'] ?? 'N/A', Icons.phone_outlined),
-          _buildInfoTile(context, 'Store Location', user?['location']?['fullLocation'] ?? 'N/A', Icons.store_outlined),
-          _buildInfoTile(context, 'Joined On', user?['createdAt']?.toString().substring(0, 10) ?? 'N/A', Icons.calendar_today_outlined),
-          
+
+          _buildProfileField(context, Icons.phone_outlined, 'Contact', userData['phone'] ?? 'N/A'),
+          const SizedBox(height: 12),
+          _buildProfileField(context, Icons.home_outlined, 'Village', village),
+          const SizedBox(height: 12),
+          _buildProfileField(context, Icons.map_outlined, 'Block', block),
           const SizedBox(height: 48),
-          
+
           SizedBox(
             width: double.infinity,
-            height: 54,
+            height: 52,
+            child: ElevatedButton.icon(
+              onPressed: () => Navigator.pushNamed(context, '/edit_profile', arguments: userData),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryTeal),
+              icon: const Icon(Icons.edit, color: Colors.white),
+              label: const TranslatedText('Edit Profile', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
             child: OutlinedButton.icon(
-               onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
-               icon: const Icon(Icons.logout),
-               label: const TranslatedText('Sign Out Safely'),
-               style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red)),
+              onPressed: () {
+                Provider.of<UserProvider>(context, listen: false).clearUser();
+                Navigator.pushReplacementNamed(context, '/home');
+              },
+              icon: const Icon(Icons.logout, color: Colors.redAccent),
+              label: const TranslatedText('Logout', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -49,12 +85,11 @@ class PharmacistProfileTab extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoTile(BuildContext context, String label, String value, IconData icon) {
+  Widget _buildProfileField(BuildContext context, IconData icon, String label, String value) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
+        color: AppColors.adaptiveSurface(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.adaptiveBorder(context)),
       ),
@@ -62,14 +97,12 @@ class PharmacistProfileTab extends StatelessWidget {
         children: [
           Icon(icon, color: AppColors.primaryTeal, size: 20),
           const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TranslatedText(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-              ],
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TranslatedText(label, style: TextStyle(fontSize: 10, color: AppColors.adaptiveTextSecondary(context))),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            ],
           ),
         ],
       ),
