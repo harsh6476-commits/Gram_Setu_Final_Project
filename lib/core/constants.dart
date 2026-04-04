@@ -7,8 +7,8 @@ class AppConstants {
 
   // ── API ────────────────────────────────────────────────────────────────────
   /// 1. Set this to true to use a Public Tunnel (best for mobile demos & judges).
-  static const bool useTunnel = false; 
-  static const String tunnelUrl = 'https://YOUR_TUNNEL_URL.loca.lt'; // Paste URL from 'npm run tunnel'
+  static const bool useTunnel = true; 
+  static const String tunnelUrl = 'https://yellow-turtles-smoke.loca.lt'; // Live Tunnel Active
 
   /// 2. If true, all systems connect to the _manualIp below.
   static const bool usePhysicalIp = false; 
@@ -16,7 +16,10 @@ class AppConstants {
 
   /// Base URL is resolved automatically for any machine running it:
   static String get baseUrl {
-    if (useTunnel) return tunnelUrl;
+    // If we're on the same machine (Web or Simulator), use localhost for speed and to avoid tunnel bypass screens.
+    bool isSameMachine = kIsWeb && (Uri.base.host == 'localhost' || Uri.base.host.isEmpty);
+    
+    if (useTunnel && !isSameMachine) return tunnelUrl;
     if (usePhysicalIp) return 'http://$_manualIp:3000';
     
     if (kIsWeb) {
