@@ -44,13 +44,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final args = ModalRoute.of(context)?.settings.arguments;
       if (args is Map<String, dynamic>) {
         _userData = args;
+        Map<String, dynamic>? loc;
+        if (_userData?['location'] is Map) {
+          loc = Map<String, dynamic>.from(_userData?['location'] as Map);
+        }
+        
+        String fullLoc = '';
+        if (_userData?['location'] is String) {
+          fullLoc = _userData?['location'] as String;
+        } else if (loc != null) {
+          fullLoc = loc['fullLocation'] ?? loc['village'] ?? '';
+        }
+
         _nameController.text = _userData?['name'] ?? '';
         _contactController.text = _userData?['phone'] ?? '';
-        _locationController.text = _userData?['location'] ?? '';
+        _locationController.text = fullLoc;
         _emergencyContactController.text = _userData?['emergencyContact'] ?? '';
         _ageController.text = _userData?['age']?.toString() ?? '';
-        _villageController.text = _userData?['village'] ?? _userData?['location']?['village'] ?? '';
-        _blockController.text = _userData?['block'] ?? _userData?['location']?['block'] ?? '';
+        _villageController.text = _userData?['village'] ?? loc?['village'] ?? '';
+        _blockController.text = _userData?['block'] ?? loc?['block'] ?? '';
         _mciController.text = _userData?['mciNumber'] ?? '';
         _hospitalController.text = _userData?['hospitalName'] ?? '';
         _ashaIdController.text = _userData?['ashaId'] ?? '';
