@@ -5,33 +5,35 @@ import 'dart:io' show Platform;
 class AppConstants {
   AppConstants._(); // prevent instantiation
 
-  // ── API ────────────────────────────────────────────────────────────────────
-  /// 1. Set this to true to use a Public Tunnel (best for mobile demos & judges).
+  // ── IMPORTANT: HACKATHON CONFIGURATION ───────────────────────────────────────
+  
+  /// 1. PUBLIC TUNNEL (Recommended for judges & real devices)
+  ///    Run 'npm run tunnel' on your backend terminal.
+  ///    Set 'useTunnel = true' and paste the URL below.
   static const bool useTunnel = false; 
-  static const String tunnelUrl = 'https://YOUR_TUNNEL_URL.loca.lt'; // Paste URL from 'npm run tunnel'
+  static const String tunnelUrl = 'https://some-tunnel-url.loca.lt';
 
-  /// 2. If true, all systems connect to the _manualIp below.
-  static const bool usePhysicalIp = false; 
-  static const String _manualIp = 'localhost'; 
+  /// 2. PHYSICAL DEVICE (Use this if using your phone on the SAME Wi-Fi)
+  ///    Check your laptop's IP (e.g., cmd -> ipconfig -> IPv4 Address)
+  ///    Set 'useNetworkIp' = true and paste YOUR LAPTOP IP below.
+  static const bool useNetworkIp = false; 
+  static const String _laptopIp = '192.168.1.5'; // Example laptop IP
 
-  /// Base URL is resolved automatically for any machine running it:
+  /// --- AUTO RESOLVING BASE URL ---
   static String get baseUrl {
     if (useTunnel) return tunnelUrl;
-    if (usePhysicalIp) return 'http://$_manualIp:3000';
+    if (useNetworkIp) return 'http://$_laptopIp:3000';
     
+    // For local testing on Emulator or Chrome
     if (kIsWeb) {
-      // If served via web, use current host (e.g., localhost or the machine IP).
       final host = Uri.base.host.isEmpty ? 'localhost' : Uri.base.host;
       return 'http://$host:3000';
     }
     
-    // For native platforms running on the same machine as the backend:
-    if (Platform.isAndroid) {
-      // Android emulators need 10.0.2.2 to see the host machine.
-      return 'http://10.0.2.2:3000';
-    }
+    // On Android Emulator (10.0.2.2 points to localhost of the laptop)
+    // NOTE: This will NOT work on a physical phone.
+    if (Platform.isAndroid) return 'http://10.0.2.2:3000';
     
-    // iOS Simulators, Windows, macOS, etc. can all use 'localhost' directly.
     return 'http://localhost:3000';
   }
 
