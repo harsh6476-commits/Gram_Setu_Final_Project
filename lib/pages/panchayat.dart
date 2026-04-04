@@ -36,12 +36,15 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
     final user = Provider.of<UserProvider>(context, listen: false).user;
     if (user == null) return;
     
-    final village = user['village'] ?? '';
-    final block = user['block'] ?? '';
+    final rawVillage = user['location']?['village'] ?? user['village'] ?? '';
+    final rawBlock = user['location']?['block'] ?? user['block'] ?? '';
     
+    final village = rawVillage is String ? rawVillage : '';
+    final block = rawBlock is String ? rawBlock : '';
+
     try {
-      final villageEncoded = Uri.encodeComponent(village);
-      final blockEncoded = Uri.encodeComponent(block);
+      final villageEncoded = Uri.encodeComponent(village.trim());
+      final blockEncoded = Uri.encodeComponent(block.trim());
       final response = await ApiService.get('/stats/village?village=$villageEncoded&block=$blockEncoded');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -95,7 +98,7 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
                       style: TextStyle(fontSize: 14, color: AppColors.adaptiveTextSecondary(context))
                     ),
                     Text(
-                      '${user?['village'] ?? ''}${user?['village'] != null && user?['block'] != null ? ', ' : ''}${user?['block'] ?? ''}',
+                    '${user?['location']?['village'] ?? user?['village'] ?? ''}${ (user?['location']?['village'] ?? user?['village']) != null && (user?['location']?['block'] ?? user?['block']) != null ? ', ' : ''}${user?['location']?['block'] ?? user?['block'] ?? ''}',
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primaryTeal),
                     ),
                   ],
@@ -168,19 +171,27 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
 
                 const SectionHeader(title: 'Administrative Controls'),
                 ActionCard(
+                  title: 'Add New Patient',
+                  subtitle: 'Register a new villager to the platform',
+                  icon: Icons.person_add_outlined,
+                  isDark: true,
+                  accentColor: AppColors.primaryTeal,
+                  onTap: () => Navigator.pushNamed(context, '/patient_registration', arguments: {'asWorker': true}),
+                ),
+                ActionCard(
                   title: 'View Health Records',
                   subtitle: 'Enter Patient UID to retrieve historical data',
                   icon: Icons.history_edu_outlined,
                   isDark: true,
-                  accentColor: AppColors.primaryTeal,
+                  accentColor: AppColors.softBlue,
                   onTap: () => Navigator.pushNamed(context, '/search_patient'),
                 ),
                 ActionCard(
-                  title: 'Village Statics',
+                  title: 'Village Statistics',
                   subtitle: 'View overall village health analytics',
                   icon: Icons.analytics_outlined,
                   isDark: true,
-                  accentColor: AppColors.softBlue,
+                  accentColor: AppColors.doctorGreen,
                   onTap: () => Navigator.pushNamed(context, '/panchayat_records'),
                 ),
                 ActionCard(
@@ -219,8 +230,7 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildNavItem(Icons.home, 'Home', 0),
-          _buildNavItem(Icons.manage_search_outlined, 'Search Patient', 1),
-          _buildNavItem(Icons.person_outline, 'Profile', 2),
+          _buildNavItem(Icons.person_outline, 'Profile', 1),
         ],
       ),
     );
@@ -236,8 +246,6 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
         }
 
         if (index == 1) {
-          await Navigator.pushNamed(context, '/search_patient');
-        } else if (index == 2) {
           await Navigator.pushNamed(context, '/profile', arguments: 'panchayat');
         }
 

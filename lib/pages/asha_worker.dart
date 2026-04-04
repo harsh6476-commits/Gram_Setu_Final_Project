@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../services/api_service.dart';
 import '../core/app_colors.dart';
 import '../core/user_provider.dart';
 import '../widgets/gram_app_bar.dart';
@@ -15,6 +17,47 @@ class AshaWorkerDashboard extends StatefulWidget {
 
 class _AshaWorkerDashboardState extends State<AshaWorkerDashboard> {
   int _currentIndex = 0;
+  bool _isLoading = true;
+  final Map<String, dynamic> _stats = {
+    'villagePatients': 0,
+    'bookedConsultations': 0,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAshaStats();
+  }
+
+  Future<void> _fetchAshaStats() async {
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    if (user == null) return;
+    
+    final ashaId = user['ashaId']?.toString() ?? '';
+    final rawVillage = user['location']?['village'] ?? user['village'] ?? '';
+    
+    final village = rawVillage is String ? rawVillage : '';
+
+    try {
+      final ashaIdEnc = Uri.encodeComponent(ashaId.trim());
+      final villageEnc = Uri.encodeComponent(village.trim());
+      final response = await ApiService.get('/stats/asha?ashaId=$ashaIdEnc&village=$villageEnc');
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (mounted) {
+          setState(() {
+            _stats['villagePatients'] = data['villagePatients'] ?? 0;
+            _stats['bookedConsultations'] = data['bookedConsultations'] ?? 0;
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('ASHA Stats Error: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,11 +90,57 @@ class _AshaWorkerDashboardState extends State<AshaWorkerDashboard> {
                     style: TextStyle(fontSize: 14, color: AppColors.adaptiveTextSecondary(context))
                   ),
                   Text(
-                    '${user?['village'] ?? ''}${user?['village'] != null && user?['block'] != null ? ', ' : ''}${user?['block'] ?? ''}',
+                    '${user?['location']?['village'] ?? user?['village'] ?? ''}${ (user?['location']?['village'] ?? user?['village']) != null && (user?['location']?['block'] ?? user?['block']) != null ? ', ' : ''}${user?['location']?['block'] ?? user?['block'] ?? ''}',
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primaryTeal),
                   ),
                 ],
               ),
+              const SizedBox(height: 24),
+
+              // ASHA Stats Board
+              _isLoading 
+              ? const Center(child: CircularProgressIndicator())
+              : Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryTeal.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.primaryTeal.withOpacity(0.2)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Village Patients', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 8),
+                            Text('${_stats['villagePatients']}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryTeal)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.ashaWorkerPink.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.ashaWorkerPink.withOpacity(0.2)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Your Bookings', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 8),
+                            Text('${_stats['bookedConsultations']}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.ashaWorkerPink)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               const SizedBox(height: 32),
 
               const SectionHeader(title: 'Community Care'),

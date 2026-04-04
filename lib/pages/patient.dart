@@ -19,7 +19,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
   int _currentIndex = 0;
   int _consultationCount = 0;
   int _prescriptionCount = 0;
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -31,7 +30,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
     final user = Provider.of<UserProvider>(context, listen: false).user;
     if (user == null) return;
     
-    setState(() => _isLoading = true);
     try {
       final uid = user['uid'];
       final response = await ApiService.get('/users/uid/$uid');
@@ -42,14 +40,11 @@ class _PatientDashboardState extends State<PatientDashboard> {
       }
     } catch (e) {
       print('Dashboard Data Error: $e');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final user = Provider.of<UserProvider>(context).user;
     final userName = user?['name'] ?? 'User';
     final uid = user?['uid'] ?? 'N/A';
