@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:gram_setu/core/theme.dart';
 import 'package:gram_setu/core/theme_provider.dart';
 import 'package:gram_setu/core/user_provider.dart';
+import 'package:gram_setu/core/language_provider.dart';
 
 import 'package:gram_setu/pages/home.dart';
 import 'package:gram_setu/pages/splash.dart';
@@ -37,6 +38,7 @@ import 'package:gram_setu/pages/accepted_consultations_screen.dart';
 import 'package:gram_setu/pages/search_patient_screen.dart';
 import 'package:gram_setu/pages/leaderboard_screen.dart';
 import 'package:gram_setu/pages/search_prescription_screen.dart';
+import 'package:gram_setu/pages/rppg_monitor_screen.dart';
 
 void main() {
   runApp(
@@ -44,6 +46,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
       ],
       child: const GramSetuApp(),
     ),
@@ -105,6 +108,7 @@ class GramSetuApp extends StatelessWidget {
           '/leaderboard': (context) => const LeaderboardScreen(),
           '/view_prescription_search': (context) =>
               const SearchPrescriptionScreen(),
+          '/rppg_monitor': (context) => const RPPGMonitorScreen(),
         };
 
         final builder = routes[settings.name];
