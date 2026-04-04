@@ -31,6 +31,7 @@ class AuthService {
     required String age,
     required String emergencyContact,
     required String password,
+    bool asWorker = false,
   }) async {
     try {
       final regUrl = '$_baseUrl/api/auth/register';
@@ -53,7 +54,9 @@ class AuthService {
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 201 && data['success'] == true) {
-        await _storage.write(key: 'jwt_token', value: data['token']);
+        if (!asWorker) {
+          await _storage.write(key: 'jwt_token', value: data['token']);
+        }
         return data['user'];
       } else {
         throw Exception(data['message'] ?? 'Registration failed');
