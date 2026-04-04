@@ -8,7 +8,6 @@ router.post('/add', async (req, res) => {
   try {
     const { name, genericName, brandName, category, expiryDate, availability, price, stockQuantity, description, manufacturer, prescriptionRequired, imageUrl, pharmacistId } = req.body;
     
-    // Check if medicine already exists with same name and brand
     const existing = await Medicine.findOne({ name: name, brandName: brandName });
     if (existing) {
         return res.status(449).json({ message: 'Medicine already exists', medicine: existing });
@@ -78,40 +77,68 @@ router.delete('/delete/:id', async (req, res) => {
   }
 });
 
-// Medicine Requests
+// --- Medicine Requests ---
+
+// Submit a new medicine request
 router.post('/request', async (req, res) => {
     try {
-        const nr = new MedicineRequest(req.body);
-        await nr.save();
-        res.status(201).json({ message: 'Request submitted', request: nr });
+        const { patientUID, patientName, patientPhone, medicineId, medicineName, quantityRequested, prescriptionUrl, optionalNote } = req.body;
+        
+        if (!patientUID || !medicineId || !medicineName) {
+            return res.status(400).json({ message: 'Required fields missing' });
+        }
+
+        const newRequest = new MedicineRequest({
+            patientUID, patientName, patientPhone,
+            medicineId, medicineName,
+            quantityRequested, prescriptionUrl, optionalNote
+        });
+        
+        await newRequest.save();
+        res.status(201).json({ message: 'Medicine request submitted successfully', request: newRequest });
     } catch (e) {
         res.status(500).json({ message: 'Error requesting medicine', error: e.message });
     }
 });
 
-router.get('/requests', async (req, res) => {
+// Get requests for a specific patient
+router.get('/requests/patient/:uid', async (req, res) => {
     try {
-        const { pharmacistId, status } = req.query;
-        let filter = {};
-        if (pharmacistId) filter.pharmacistId = pharmacistId;
-        if (status) filter.status = status;
-
-        const requests = await MedicineRequest.find(filter)
-            .populate('medicineId')
-            .sort({ createdAt: -1 });
+        const requests = await MedicineRequest.find({ patientUID: req.params.uid }).sort({ createdAt: -1 });
         res.status(200).json(requests);
     } catch (e) {
-        res.status(500).json({ message: 'Error fetching requests', error: e.message });
+        res.status(500).json({ message: 'Error fetching patient medicine requests', error: e.message });
     }
 });
 
+// Get all requests (Pharmacist Side)
+router.get('/requests', async (req, res) => {
+    try {
+        const { pharmacistId, requestStatus } = req.query;
+        let filter = {};
+        if (pharmacistId) filter.pharmacistId = pharmacistId;
+        if (requestStatus) filter.requestStatus = requestStatus;
+
+        const requests = await MedicineRequest.find(filter).sort({ createdAt: -1 });
+        res.status(200).json(requests);
+    } catch (e) {
+        res.status(500).json({ message: 'Error fetching medicine requests', error: e.message });
+    }
+});
+
+// Update request status (Pharmacist Side)
 router.put('/request/:id', async (req, res) => {
     try {
-        const updated = await MedicineRequest.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!updated) return res.status(404).json({ message: 'Request not found' });
-        res.status(200).json({ message: 'Request updated', request: updated });
+        const { requestStatus, pharmacistId, pharmacistResponse } = req.body;
+        const updated = await MedicineRequest.findByIdAndUpdate(
+            req.params.id, 
+            { requestStatus, pharmacistId, pharmacistResponse, updatedAt: Date.now() }, 
+            { new: true }
+        );
+        if (!updated) return res.status(404).json({ message: 'Medicine request not found' });
+        res.status(200).json({ message: 'Medicine request updated', request: updated });
     } catch (e) {
-        res.status(500).json({ message: 'Error updating request', error: e.message });
+        res.status(500).json({ message: 'Error updating medicine request', error: e.message });
     }
 });
 

@@ -1,70 +1,68 @@
 class MedicineRequest {
   final String id;
+  final String patientUID;
   final String patientName;
-  final String phone;
-  final String? location;
-  final String? address;
+  final String patientPhone;
   final String medicineId;
-  final String? medicineName; // Populated from join or secondary fetch
-  final int quantity;
-  final String? notes;
-  final String status;
+  final String medicineName;
+  final int quantityRequested;
   final String? prescriptionUrl;
+  final String? optionalNote;
+  final String requestStatus;
   final String? pharmacistId;
-  final String? rejectionReason;
+  final String? pharmacistResponse;
   final DateTime createdAt;
+  final DateTime updatedAt;
 
   MedicineRequest({
     required this.id,
+    required this.patientUID,
     required this.patientName,
-    required this.phone,
-    this.location,
-    this.address,
+    required this.patientPhone,
     required this.medicineId,
-    this.medicineName,
-    this.quantity = 1,
-    this.notes,
-    this.status = 'Pending',
+    required this.medicineName,
+    this.quantityRequested = 1,
     this.prescriptionUrl,
+    this.optionalNote,
+    this.requestStatus = 'Pending',
     this.pharmacistId,
-    this.rejectionReason,
+    this.pharmacistResponse,
     required this.createdAt,
+    required this.updatedAt,
   });
 
   factory MedicineRequest.fromJson(Map<String, dynamic> json) {
     return MedicineRequest(
       id: json['_id'] ?? '',
+      patientUID: json['patientUID'] ?? '',
       patientName: json['patientName'] ?? '',
-      phone: json['phone'] ?? '',
-      location: json['location'],
-      address: json['address'],
-      medicineId: json['medicineId']?['_id'] ?? json['medicineId'] ?? '',
-      medicineName: json['medicineId']?['name'] ?? json['medicineName'],
-      quantity: json['quantity'] ?? 1,
-      notes: json['notes'],
-      status: json['status'] ?? 'Pending',
+      patientPhone: json['patientPhone'] ?? '',
+      medicineId: (json['medicineId'] is Map) ? json['medicineId']['_id'] : (json['medicineId'] ?? ''),
+      medicineName: json['medicineName'] ?? ((json['medicineId'] is Map) ? json['medicineId']['name'] : 'Unknown'),
+      quantityRequested: json['quantityRequested'] ?? json['quantity'] ?? 1,
       prescriptionUrl: json['prescriptionUrl'],
+      optionalNote: json['optionalNote'] ?? json['notes'],
+      requestStatus: json['requestStatus'] ?? json['status'] ?? 'Pending',
       pharmacistId: json['pharmacistId'],
-      rejectionReason: json['rejectionReason'],
-      createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt']) 
-          : DateTime.now(),
+      pharmacistResponse: json['pharmacistResponse'] ?? json['rejectionReason'],
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : DateTime.now(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'patientUID': patientUID,
       'patientName': patientName,
-      'phone': phone,
-      'location': location,
-      'address': address,
+      'patientPhone': patientPhone,
       'medicineId': medicineId,
-      'quantity': quantity,
-      'notes': notes,
-      'status': status,
+      'medicineName': medicineName,
+      'quantityRequested': quantityRequested,
       'prescriptionUrl': prescriptionUrl,
+      'optionalNote': optionalNote,
+      'requestStatus': requestStatus,
       'pharmacistId': pharmacistId,
-      'rejectionReason': rejectionReason,
+      'pharmacistResponse': pharmacistResponse,
     };
   }
 }

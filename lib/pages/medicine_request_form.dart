@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
+import '../core/user_provider.dart';
 import '../core/models/medicine.dart';
 import '../core/models/medicine_request.dart';
 import '../services/medicine_service.dart';
@@ -21,10 +23,6 @@ class MedicineRequestForm extends StatefulWidget {
 
 class _MedicineRequestFormState extends State<MedicineRequestForm> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _villageController = TextEditingController();
-  final _addressController = TextEditingController();
   final _quantityController = TextEditingController(text: '1');
   final _noteController = TextEditingController();
   bool _isPrescriptionUploaded = false;
@@ -40,20 +38,31 @@ class _MedicineRequestFormState extends State<MedicineRequestForm> {
       return;
     }
 
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.user;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: TranslatedText('Please login to request medicine')),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     final request = MedicineRequest(
       id: '',
-      patientName: _nameController.text.trim(),
-      phone: _phoneController.text.trim(),
-      location: _villageController.text.trim(),
-      address: _addressController.text.trim(),
+      patientUID: user['uid'] ?? 'N/A',
+      patientName: user['name'] ?? 'Unknown',
+      patientPhone: user['phone'] ?? 'N/A',
       medicineId: widget.medicine.id,
-      quantity: int.tryParse(_quantityController.text) ?? 1,
-      notes: _noteController.text.trim(),
-      status: 'Pending',
-      prescriptionUrl: _isPrescriptionUploaded ? 'demo_url.jpg' : null,
+      medicineName: widget.medicine.name,
+      quantityRequested: int.tryParse(_quantityController.text) ?? 1,
+      optionalNote: _noteController.text.trim(),
+      requestStatus: 'Pending',
+      prescriptionUrl: _isPrescriptionUploaded ? 'demo_prescription_url.jpg' : null,
       createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
 
     final success = await MedicineService.requestMedicine(request);
@@ -62,7 +71,7 @@ class _MedicineRequestFormState extends State<MedicineRequestForm> {
       setState(() => _isSubmitting = false);
       if (success) {
         Navigator.pop(context);
-        _showSuccessDialog();
+        _showSuccessDialog(request);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: TranslatedText('Failed to send request. Please try again.')),
@@ -71,19 +80,23 @@ class _MedicineRequestFormState extends State<MedicineRequestForm> {
     }
   }
 
-  void _showSuccessDialog() {
+  void _showSuccessDialog(MedicineRequest req) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const TranslatedText('Request Submitted!'),
+        title: const TranslatedText('Request Sent!'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.check_circle, color: Colors.green, size: 60),
             const SizedBox(height: 16),
-            const TranslatedText('Your medicine request has been sent to the pharmacist.'),
+            const TranslatedText('Short Summary:'),
             const SizedBox(height: 8),
-            const TranslatedText('Estimated response time: 2-4 hours'),
+            Text('UID: ${req.patientUID}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            Text('Med: ${req.medicineName}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text('Qty: ${req.quantityRequested}'),
+            const SizedBox(height: 16),
+            const TranslatedText('Estimated response: 2-4 hours'),
           ],
         ),
         actions: [
@@ -96,6 +109,7 @@ class _MedicineRequestFormState extends State<MedicineRequestForm> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final user = Provider.of<UserProvider>(context).user;
     
     return Container(
       decoration: BoxDecoration(
@@ -133,25 +147,46 @@ class _MedicineRequestFormState extends State<MedicineRequestForm> {
                   ],
                 ),
                 const SizedBox(height: 24),
+                
+                // Patient Info (Read Only)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryTeal.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.primaryTeal.withOpacity(0.1)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.person_pin, color: AppColors.primaryTeal, size: 20),
+                          const SizedBox(width: 8),
+                          Text('Patient UID: ${user?['uid'] ?? 'N/A'}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text('Name: ${user?['name'] ?? 'N/A'}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
                 Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildTextField('Full Name', _nameController, Icons.person_outline),
-                      _buildTextField('Mobile Number', _phoneController, Icons.phone_outlined, keyboard: TextInputType.phone),
-                      _buildTextField('Village / Area', _villageController, Icons.location_on_outlined),
-                      _buildTextField('Address Details', _addressController, Icons.home_outlined),
-                      
                       Row(
                         children: [
-                          Expanded(child: _buildTextField('Quantity', _quantityController, Icons.format_list_numbered, keyboard: TextInputType.number)),
+                          Expanded(child: _buildTextField('Quantity Needed *', _quantityController, Icons.format_list_numbered, keyboard: TextInputType.number)),
                           const SizedBox(width: 16),
-                          Expanded(flex: 2, child: Container()),
+                          Expanded(flex: 1, child: Container()),
                         ],
                       ),
                       
-                      _buildTextField('Additional Notes', _noteController, Icons.note_alt_outlined, maxLines: 2),
+                      _buildTextField('Optional Note', _noteController, Icons.note_alt_outlined, maxLines: 2),
                       
                       if (widget.medicine.prescriptionRequired) ...[
                         const SizedBox(height: 8),
@@ -164,7 +199,7 @@ class _MedicineRequestFormState extends State<MedicineRequestForm> {
                         height: 56,
                         child: ElevatedButton(
                           onPressed: _isSubmitting ? null : _submitRequest,
-                          style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryTeal),
+                          style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryTeal, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                           child: _isSubmitting 
                             ? const CircularProgressIndicator(color: Colors.white)
                             : const TranslatedText('Submit Request', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
@@ -224,8 +259,8 @@ class _MedicineRequestFormState extends State<MedicineRequestForm> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TranslatedText('Upload Prescription', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
-                    TranslatedText('Camera photo or PDF accepted', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    TranslatedText('Upload Prescription *', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
+                    TranslatedText('Accepts only Images or PDF', style: TextStyle(fontSize: 12, color: Colors.grey)),
                   ],
                 ),
               ),
@@ -237,7 +272,7 @@ class _MedicineRequestFormState extends State<MedicineRequestForm> {
               children: [
                 const Icon(Icons.check_circle, color: Colors.green, size: 20),
                 const SizedBox(width: 8),
-                const TranslatedText('Prescription uploaded successfully', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                const TranslatedText('Prescription uploaded', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
                 const Spacer(),
                 IconButton(onPressed: () => setState(() => _isPrescriptionUploaded = false), icon: const Icon(Icons.close, size: 16)),
               ],
@@ -245,10 +280,10 @@ class _MedicineRequestFormState extends State<MedicineRequestForm> {
           else
             OutlinedButton.icon(
               onPressed: () {
-                // Mock upload
+                // mock upload for now
                 setState(() => _isPrescriptionUploaded = true);
               },
-              icon: const Icon(Icons.camera_alt_outlined),
+              icon: const Icon(Icons.file_upload_outlined),
               label: const TranslatedText('Click to Upload'),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.orange),

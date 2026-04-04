@@ -3,6 +3,7 @@ import '../../core/app_colors.dart';
 import '../../core/models/medicine.dart';
 import '../../services/medicine_service.dart';
 import '../../widgets/translated_text.dart';
+import 'add_medicine_tab.dart';
 
 class InventoryTab extends StatefulWidget {
   const InventoryTab({super.key});
@@ -45,6 +46,36 @@ class _InventoryTabState extends State<InventoryTab> {
     });
   }
 
+  void _openEditMedicine(Medicine med) async {
+    final result = await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, controller) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            children: [
+              Container(margin: const EdgeInsets.symmetric(vertical: 12), width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
+              const TranslatedText('Edit Medicine', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Expanded(child: AddMedicineTab(editMedicine: med)),
+            ],
+          ),
+        ),
+      ),
+    );
+    
+    if (result == true) {
+      _fetchMedicines();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -78,7 +109,7 @@ class _InventoryTabState extends State<InventoryTab> {
                 child: _medicines.isEmpty
                   ? const Center(child: TranslatedText('No medicines in inventory.'))
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       itemCount: _medicines.length,
                       itemBuilder: (context, index) {
                         return _buildMedicineRow(_medicines[index]);
@@ -102,6 +133,9 @@ class _InventoryTabState extends State<InventoryTab> {
         color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.adaptiveBorder(context)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
       ),
       child: Row(
         children: [
@@ -113,7 +147,7 @@ class _InventoryTabState extends State<InventoryTab> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: med.imageUrl != null 
-              ? ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.network(med.imageUrl!, fit: BoxFit.cover))
+              ? ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.network(med.imageUrl!, fit: BoxFit.cover, errorBuilder: (c, e, s) => Icon(Icons.medication, color: stockColor)))
               : Icon(Icons.medication, color: stockColor),
           ),
           const SizedBox(width: 16),
@@ -122,7 +156,7 @@ class _InventoryTabState extends State<InventoryTab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(med.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                if (med.genericName != null)
+                if (med.genericName != null && med.genericName!.isNotEmpty)
                   Text(med.genericName!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 const SizedBox(height: 4),
                 Row(
@@ -140,10 +174,8 @@ class _InventoryTabState extends State<InventoryTab> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.edit_outlined, color: Colors.grey, size: 20),
-            onPressed: () {
-              // Edit logic
-            },
+            icon: const Icon(Icons.edit_outlined, color: AppColors.primaryTeal, size: 20),
+            onPressed: () => _openEditMedicine(med),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
@@ -158,8 +190,9 @@ class _InventoryTabState extends State<InventoryTab> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const TranslatedText('Delete Medicine'),
-        content: TranslatedText('Are you sure you want to delete ${med.name}?'),
+        content: TranslatedText('Are you sure you want to delete ${med.name}? This action cannot be undone.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const TranslatedText('Cancel')),
           TextButton(
