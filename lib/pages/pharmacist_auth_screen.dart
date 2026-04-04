@@ -83,9 +83,6 @@ class _PharmacistAuthScreenState extends State<PharmacistAuthScreen> with Single
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Scaffold(
       backgroundColor: AppColors.adaptiveBackground(context),
       appBar: AppBar(

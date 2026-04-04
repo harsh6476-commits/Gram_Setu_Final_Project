@@ -10,7 +10,6 @@ import '../widgets/pharmacist/inventory_tab.dart';
 import '../widgets/pharmacist/add_medicine_tab.dart';
 import '../widgets/pharmacist/notifications_tab.dart';
 import '../widgets/pharmacist/pharmacist_profile_tab.dart';
-import '../widgets/translated_text.dart';
 
 class PharmacistDashboard extends StatefulWidget {
   const PharmacistDashboard({super.key});

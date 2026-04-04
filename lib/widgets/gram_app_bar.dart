@@ -12,6 +12,7 @@ class GramAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onLogoutTap;
   final bool showSos;
   final bool showBack;
+  final bool showProfile;
 
   const GramAppBar({
     super.key,
@@ -20,10 +21,11 @@ class GramAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onLogoutTap,
     this.showSos = true,
     this.showBack = false,
+    this.showProfile = true,
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 10); // increased for double subtitle
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 10);
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,6 @@ class GramAppBar extends StatelessWidget implements PreferredSizeWidget {
     final theme = Theme.of(context);
     final user = userProvider.user;
 
-    // Get location accurately from user data
     String locationText = '';
     if (user != null && user['location'] != null) {
       final loc = user['location'];
@@ -149,6 +150,12 @@ class GramAppBar extends StatelessWidget implements PreferredSizeWidget {
             icon: const Icon(Icons.logout, size: 22),
             onPressed: onLogoutTap,
             tooltip: 'Logout',
+          ),
+        if (showProfile && user != null)
+          IconButton(
+            icon: const Icon(Icons.person_outline, size: 22),
+            onPressed: () => Navigator.pushNamed(context, '/profile'),
+            tooltip: 'Profile',
           ),
         _buildLanguageSelector(context),
       ],
