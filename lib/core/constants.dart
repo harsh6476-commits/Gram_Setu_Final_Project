@@ -5,24 +5,22 @@ import 'dart:io' show Platform;
 class AppConstants {
   AppConstants._(); // prevent instantiation
 
-  // ── IMPORTANT: HACKATHON CONFIGURATION ───────────────────────────────────────
-  
-  /// 1. PUBLIC TUNNEL (Recommended for judges & real devices)
-  ///    Run 'npm run tunnel' on your backend terminal.
-  ///    Set 'useTunnel = true' and paste the URL below.
-  static const bool useTunnel = false; 
-  static const String tunnelUrl = 'https://some-tunnel-url.loca.lt';
+  // ── API ────────────────────────────────────────────────────────────────────
+  /// 1. Set this to true to use a Public Tunnel (best for mobile demos & judges).
+  static const bool useTunnel = true; 
+  static const String tunnelUrl = 'https://yellow-turtles-smoke.loca.lt'; // Live Tunnel Active
 
-  /// 2. PHYSICAL DEVICE (Use this if using your phone on the SAME Wi-Fi)
-  ///    Check your laptop's IP (e.g., cmd -> ipconfig -> IPv4 Address)
-  ///    Set 'useNetworkIp' = true and paste YOUR LAPTOP IP below.
-  static const bool useNetworkIp = false; 
-  static const String _laptopIp = '192.168.1.5'; // Example laptop IP
+  /// 2. If true, all systems connect to the _manualIp below.
+  static const bool usePhysicalIp = false; 
+  static const String _manualIp = 'localhost'; 
 
   /// --- AUTO RESOLVING BASE URL ---
   static String get baseUrl {
-    if (useTunnel) return tunnelUrl;
-    if (useNetworkIp) return 'http://$_laptopIp:3000';
+    // If we're on the same machine (Web or Simulator), use localhost for speed and to avoid tunnel bypass screens.
+    bool isSameMachine = kIsWeb && (Uri.base.host == 'localhost' || Uri.base.host.isEmpty);
+    
+    if (useTunnel && !isSameMachine) return tunnelUrl;
+    if (usePhysicalIp) return 'http://$_manualIp:3000';
     
     // For local testing on Emulator or Chrome
     if (kIsWeb) {
