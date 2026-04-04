@@ -225,7 +225,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
         if (role == 'panchayat') {
           Navigator.pushNamed(context, '/panchayat_auth');
         } else if (role == 'pharmacist') {
-          Navigator.pushNamed(context, '/pharmacist_auth');
+          Navigator.pushNamed(context, '/pharmacy_portal');
         } else {
           Navigator.pushNamed(context, '/login', arguments: role);
         }

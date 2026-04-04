@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/constants.dart';
 import '../core/models/medicine.dart';
+import '../core/models/medicine_request.dart';
 
 class MedicineService {
   static final String _baseUrl = '${AppConstants.baseUrl}/api/medicine';
@@ -69,6 +70,69 @@ class MedicineService {
     } catch (e) {
       print('Error deleting medicine: $e');
       return false;
+    }
+  }
+
+  // Request Methods
+  static Future<bool> requestMedicine(MedicineRequest request) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/request'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(request.toJson()),
+      );
+      return response.statusCode == 201;
+    } catch (e) {
+      print('Error requesting medicine: $e');
+      return false;
+    }
+  }
+
+  static Future<List<MedicineRequest>> getRequests({String? pharmacistId, String? status}) async {
+    try {
+      String query = '';
+      if (pharmacistId != null) query += 'pharmacistId=$pharmacistId&';
+      if (status != null) query += 'status=$status&';
+      
+      final response = await http.get(Uri.parse('$_baseUrl/requests?$query'));
+      if (response.statusCode == 200) {
+        List<dynamic> data = json.decode(response.body);
+        return data.map((item) => MedicineRequest.fromJson(item)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching requests: $e');
+      return [];
+    }
+  }
+
+  static Future<bool> updateRequestStatus(String requestId, String status, {String? reason}) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$_baseUrl/request/$requestId'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'status': status,
+          'rejectionReason': reason,
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error updating request: $e');
+      return false;
+    }
+  }
+
+  static Future<Map<String, dynamic>> getPharmacistStats(String pharmacistId) async {
+    try {
+      final response = await http.get(Uri.parse('${AppConstants.baseUrl}/api/stats/pharmacist?pharmacistId=$pharmacistId'));
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+      return {};
+    } catch (e) {
+      print('Error fetching pharmacist stats: $e');
+      return {};
     }
   }
 }
