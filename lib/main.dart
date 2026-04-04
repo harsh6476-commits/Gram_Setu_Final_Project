@@ -43,6 +43,8 @@ import 'package:gram_setu/pages/leaderboard_screen.dart';
 import 'package:gram_setu/pages/search_prescription_screen.dart';
 import 'package:gram_setu/pages/rppg_monitor_screen.dart';
 import 'package:gram_setu/pages/request_medicine_screen.dart';
+import 'package:gram_setu/pages/pharmacy_gate_screen.dart';
+import 'package:gram_setu/pages/browse_medicines_screen.dart';
 
 void main() {
   runApp(
@@ -117,6 +119,8 @@ class GramSetuApp extends StatelessWidget {
           '/pharmacist_auth': (context) => const PharmacistAuthScreen(),
           '/pharmacist_registration': (context) => const NewPharmacistRegistrationScreen(),
           '/request_medicine': (context) => const RequestMedicineScreen(),
+          '/pharmacy_gate': (context) => const PharmacyGateScreen(),
+          '/browse_medicines': (context) => const BrowseMedicinesScreen(),
         };
 
         final builder = routes[settings.name];
