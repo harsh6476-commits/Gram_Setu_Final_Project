@@ -8,6 +8,7 @@ import '../services/api_service.dart';
 import '../services/vitals_service.dart';
 import '../widgets/gram_app_bar.dart';
 import '../widgets/translated_text.dart';
+import 'rppg_monitor_screen.dart';
 
 class VitalsRecorderScreen extends StatefulWidget {
   const VitalsRecorderScreen({super.key});
@@ -321,14 +322,27 @@ class _VitalsRecorderScreenState extends State<VitalsRecorderScreen> {
                   ),
                 ),
                 OutlinedButton(
-                  onPressed: () {
-                    setState(() {
-                      _hrController.text = '76';
-                      _spo2Controller.text = '97';
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('rPPG scan complete: HR 76, SpO2 97%'), backgroundColor: AppColors.primaryTeal),
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RPPGMonitorScreen(patientUID: _uidController.text.trim()),
+                      )
                     );
+
+                    if (result != null && result is Map) {
+                      setState(() {
+                         if (result.containsKey('heartRate')) {
+                           _hrController.text = result['heartRate'].toString();
+                         }
+                         if (result.containsKey('spo2')) {
+                           _spo2Controller.text = result['spo2'].toString();
+                         }
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('rPPG scan integrated successfully'), backgroundColor: AppColors.primaryTeal),
+                      );
+                    }
                   },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.white),
