@@ -25,6 +25,8 @@ class _NewDoctorRegistrationScreenState extends State<NewDoctorRegistrationScree
   String _village = '';
   String _block = '';
   bool _isFetchingLocation = false;
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
 
   @override
   void dispose() {
@@ -235,12 +237,13 @@ class _NewDoctorRegistrationScreenState extends State<NewDoctorRegistrationScree
             ),
             const SizedBox(height: 20),
             
-            _buildLabel(theme, 'Create Password'),
             _buildTextField(
               controller: _passwordController,
               hintText: 'Enter strong password',
               icon: Icons.lock_outline,
-              isObscure: true,
+              isObscure: !_isPasswordVisible,
+              toggleVisibility: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+              isVisibilityToggled: _isPasswordVisible,
             ),
             const SizedBox(height: 20),
 
@@ -249,7 +252,9 @@ class _NewDoctorRegistrationScreenState extends State<NewDoctorRegistrationScree
               controller: _confirmPasswordController,
               hintText: 'Re-enter password',
               icon: Icons.lock_outline,
-              isObscure: true,
+              isObscure: !_isConfirmPasswordVisible,
+              toggleVisibility: () => setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
+              isVisibilityToggled: _isConfirmPasswordVisible,
             ),
             const SizedBox(height: 40),
 
@@ -296,6 +301,8 @@ class _NewDoctorRegistrationScreenState extends State<NewDoctorRegistrationScree
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     bool isObscure = false,
+    VoidCallback? toggleVisibility,
+    bool isVisibilityToggled = false,
     int? maxLength,
     List<TextInputFormatter>? inputFormatters,
   }) {
@@ -309,9 +316,16 @@ class _NewDoctorRegistrationScreenState extends State<NewDoctorRegistrationScree
       decoration: InputDecoration(
         hintText: hintText,
         prefixIcon: Icon(icon, color: AppColors.doctorGreen),
-        suffixIcon: icon == Icons.location_on_outlined && controller.text.isNotEmpty 
-            ? const Icon(Icons.check_circle, color: AppColors.success, size: 20) 
-            : null,
+        suffixIcon: toggleVisibility != null 
+            ? IconButton(
+                icon: Icon(isVisibilityToggled ? Icons.visibility : Icons.visibility_off),
+                onPressed: toggleVisibility,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              )
+            : (icon == Icons.location_on_outlined && controller.text.isNotEmpty 
+                ? const Icon(Icons.check_circle, color: AppColors.success, size: 20) 
+                : null),
         counterText: '',
       ),
     );
