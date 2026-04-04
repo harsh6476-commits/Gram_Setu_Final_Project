@@ -6,34 +6,30 @@ class AppConstants {
   AppConstants._(); // prevent instantiation
 
   // ── API ────────────────────────────────────────────────────────────────────
-  /// 1. If true, all systems (emulators, other PCs, phones) connect to the host below.
-  static const bool usePhysicalIp = true; 
+  /// Set this to true ONLY if you want to connect to a different computer's backend (Physical Device).
+  static const bool usePhysicalIp = false; 
   
-  /// 2. The LAN IP of the computer running the backend.
-  static const String _hostIp = '192.168.53.234'; 
+  /// The LAN IP if needed (only used when usePhysicalIp is true).
+  static const String _manualIp = 'localhost'; 
 
-  /// Base URL is resolved automatically based on the platform:
+  /// Base URL is resolved automatically for any machine running it:
   static String get baseUrl {
-    if (usePhysicalIp) return 'http://$_hostIp:3000';
+    if (usePhysicalIp) return 'http://$_manualIp:3000';
     
     if (kIsWeb) {
-      // Browsers use the same host they are served from.
+      // If served via web, use current host (e.g., localhost or the machine IP).
       final host = Uri.base.host.isEmpty ? 'localhost' : Uri.base.host;
       return 'http://$host:3000';
     }
     
+    // For native platforms running on the same machine as the backend:
     if (Platform.isAndroid) {
-      // Official Android Emulator uses 10.0.2.2 for host loopback.
+      // Android emulators need 10.0.2.2 to see the host machine.
       return 'http://10.0.2.2:3000';
     }
     
-    if (Platform.isIOS || Platform.isMacOS) {
-      // iOS simulators share the host network stack.
-      return 'http://localhost:3000';
-    }
-
-    // Default fallback for physical devices or other platforms.
-    return 'http://$_hostIp:3000';
+    // iOS Simulators, Windows, macOS, etc. can all use 'localhost' directly.
+    return 'http://localhost:3000';
   }
 
   // ── Timeouts ───────────────────────────────────────────────────────────────
