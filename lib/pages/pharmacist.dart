@@ -8,10 +8,8 @@ import '../widgets/gram_app_bar.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/pharmacist/inventory_tab.dart';
 import '../widgets/pharmacist/add_medicine_tab.dart';
-import '../widgets/pharmacist/requests_tab.dart';
 import '../widgets/pharmacist/notifications_tab.dart';
 import '../widgets/pharmacist/pharmacist_profile_tab.dart';
-import '../widgets/translated_text.dart';
 
 class PharmacistDashboard extends StatefulWidget {
   const PharmacistDashboard({super.key});
@@ -24,16 +22,15 @@ class _PharmacistDashboardState extends State<PharmacistDashboard> with SingleTi
   late TabController _tabController;
   Map<String, dynamic> _stats = {};
   bool _isLoadingStats = true;
-  int _prevPendingCount = -1;
   Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _fetchStats();
-    // Refresh stats every 30 seconds for alerts
-    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) => _fetchStats(isPolling: true));
+    // Refresh stats every 60 seconds
+    _refreshTimer = Timer.periodic(const Duration(minutes: 1), (timer) => _fetchStats());
   }
 
   @override
@@ -43,51 +40,18 @@ class _PharmacistDashboardState extends State<PharmacistDashboard> with SingleTi
     super.dispose();
   }
 
-  Future<void> _fetchStats({bool isPolling = false}) async {
+  Future<void> _fetchStats() async {
     final user = Provider.of<UserProvider>(context, listen: false).user;
     final pharmacistId = user?['pharmacistId'] ?? '';
     if (pharmacistId.isEmpty) return;
 
     final stats = await MedicineService.getPharmacistStats(pharmacistId);
     if (!mounted) return;
-
-    final currentPending = stats['pendingRequests'] ?? 0;
-    
-    // Alert logic
-    if (isPolling && _prevPendingCount != -1 && currentPending > _prevPendingCount) {
-      _showNewRequestPopup();
-    }
     
     setState(() {
       _stats = stats;
       _isLoadingStats = false;
-      _prevPendingCount = currentPending;
     });
-  }
-
-  void _showNewRequestPopup() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.notification_important, color: Colors.white),
-            const SizedBox(width: 12),
-            const Expanded(child: TranslatedText('New medicine request received!', style: TextStyle(fontWeight: FontWeight.bold))),
-            TextButton(
-              onPressed: () {
-                _tabController.animateTo(2); // Go to Requests Tab
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              },
-              child: const TranslatedText('VIEW', style: TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-        backgroundColor: AppColors.primaryTeal,
-        duration: const Duration(seconds: 5),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
   }
 
   @override
@@ -103,17 +67,17 @@ class _PharmacistDashboardState extends State<PharmacistDashboard> with SingleTi
           _buildStatsSection(),
           TabBar(
             controller: _tabController,
-            isScrollable: true,
-            tabs: [
-              const Tab(text: 'Inventory'),
-              const Tab(text: 'Add Med'),
-              _buildBadgeTab('Requests', _stats['pendingRequests'] ?? 0),
-              const Tab(text: 'Alerts'),
-              const Tab(text: 'Profile'),
+            isScrollable: false,
+            tabs: const [
+              Tab(text: 'Inventory'),
+              Tab(text: 'Add Med'),
+              Tab(text: 'Alerts'),
+              Tab(text: 'Profile'),
             ],
             labelColor: AppColors.primaryTeal,
             unselectedLabelColor: Colors.grey,
             indicatorColor: AppColors.primaryTeal,
+            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
           ),
           Expanded(
             child: TabBarView(
@@ -121,31 +85,11 @@ class _PharmacistDashboardState extends State<PharmacistDashboard> with SingleTi
               children: [
                 const InventoryTab(),
                 const AddMedicineTab(),
-                const RequestsTab(),
                 const NotificationsTab(),
                 const PharmacistProfileTab(),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBadgeTab(String label, int count) {
-    return Tab(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TranslatedText(label),
-          if (count > 0) ...[
-            const SizedBox(width: 6),
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-              child: Text('$count', style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
-            ),
-          ],
         ],
       ),
     );
@@ -165,10 +109,6 @@ class _PharmacistDashboardState extends State<PharmacistDashboard> with SingleTi
           _buildStatCard('Low Stock', 'lowStock', Icons.warning_amber, Colors.orange),
           const SizedBox(width: 12),
           _buildStatCard('Out Stock', 'outOfStock', Icons.error_outline, Colors.red),
-          const SizedBox(width: 12),
-          _buildStatCard('Pending', 'pendingRequests', Icons.pending_actions, Colors.teal),
-          const SizedBox(width: 12),
-          _buildStatCard('Completed', 'completedOrders', Icons.check_circle_outline, Colors.green),
         ],
       ),
     );

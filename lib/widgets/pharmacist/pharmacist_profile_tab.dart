@@ -10,7 +10,6 @@ class PharmacistProfileTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserProvider>(context).user;
-    final theme = Theme.of(context);
     
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),

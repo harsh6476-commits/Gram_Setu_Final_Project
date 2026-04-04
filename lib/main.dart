@@ -116,7 +116,7 @@ class GramSetuApp extends StatelessWidget {
           '/rppg_monitor': (context) => const RPPGMonitorScreen(),
           '/pharmacist': (context) => const PharmacistDashboard(),
           '/pharmacy_portal': (context) => const PharmacyPortal(),
-          '/buy_medicines': (context) => const MedicineBuyScreen(),
+          '/medicine_buy': (context) => const MedicineBuyScreen(),
           '/pharmacist_auth': (context) => const PharmacistAuthScreen(),
           '/pharmacist_registration': (context) => const NewPharmacistRegistrationScreen(),
         };

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../core/app_colors.dart';
+import 'package:provider/provider.dart';
 import '../../core/models/medicine.dart';
+import '../../core/user_provider.dart';
 import '../../services/medicine_service.dart';
 import '../../widgets/translated_text.dart';
 
@@ -23,7 +24,9 @@ class _NotificationsTabState extends State<NotificationsTab> {
 
   Future<void> _fetchMedicines() async {
     setState(() => _isLoading = true);
-    final medicines = await MedicineService.getAllMedicines();
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    final pharmacistId = user?['pharmacistId'] ?? '';
+    final medicines = await MedicineService.getPharmacistInventory(pharmacistId);
     setState(() {
       _medicines = medicines;
       _isLoading = false;
@@ -33,13 +36,11 @@ class _NotificationsTabState extends State<NotificationsTab> {
   List<Map<String, dynamic>> get _notifications {
     List<Map<String, dynamic>> notes = [];
     
-    // Check low stock
     for (var med in _medicines) {
       if (med.stockQuantity <= 0) {
         notes.add({
           'title': 'Out of Stock',
           'message': '${med.name} is currently out of stock!',
-          'type': 'error',
           'icon': Icons.error_outline,
           'color': Colors.red,
         });
@@ -47,13 +48,12 @@ class _NotificationsTabState extends State<NotificationsTab> {
         notes.add({
           'title': 'Low Stock Warning',
           'message': '${med.name} stock level is low (${med.stockQuantity})',
-          'type': 'warning',
           'icon': Icons.warning_amber_outlined,
           'color': Colors.orange,
         });
       }
       
-      // Expiring soon check
+      // Expiry warnings (MM/YYYY)
       try {
         final expParts = med.expiryDate.split('/');
         if (expParts.length == 2) {
@@ -67,15 +67,13 @@ class _NotificationsTabState extends State<NotificationsTab> {
               notes.add({
                 'title': 'Expired Medicine',
                 'message': '${med.name} has already expired!',
-                'type': 'error',
                 'icon': Icons.timer_off_outlined,
                 'color': Colors.red,
               });
            } else if (diff < 30) {
               notes.add({
                 'title': 'Expiring Soon',
-                'message': '${med.name} will expire in about ${diff ~/ 30} months or less',
-                'type': 'warning',
+                'message': '${med.name} will expire in about ${diff} days!',
                 'icon': Icons.timer_outlined,
                 'color': Colors.orange,
               });
@@ -94,6 +92,16 @@ class _NotificationsTabState extends State<NotificationsTab> {
     return Column(
       children: [
         const SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: Row(
+            children: [
+              const TranslatedText('Critical Alerts', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Spacer(),
+              if (!_isLoading) IconButton(onPressed: _fetchMedicines, icon: const Icon(Icons.refresh, size: 20)),
+            ],
+          ),
+        ),
         Expanded(
           child: _isLoading 
             ? const Center(child: CircularProgressIndicator())
@@ -104,7 +112,7 @@ class _NotificationsTabState extends State<NotificationsTab> {
                       children: [
                         Icon(Icons.notifications_none_outlined, size: 80, color: Colors.grey),
                         SizedBox(height: 16),
-                        TranslatedText('No alerts or notifications.', style: TextStyle(color: Colors.grey)),
+                        TranslatedText('No urgent stock alerts.', style: TextStyle(color: Colors.grey)),
                       ],
                     ),
                   )
