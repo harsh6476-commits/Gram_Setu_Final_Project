@@ -8,6 +8,7 @@ import '../widgets/gram_app_bar.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/action_card.dart';
 import '../widgets/translated_text.dart';
+import 'vitals_history_screen.dart';
 
 class PatientDashboard extends StatefulWidget {
   const PatientDashboard({super.key});
@@ -150,6 +151,19 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   isDark: true,
                   accentColor: AppColors.softBlue,
                   onTap: () => Navigator.pushNamed(context, '/prescriptions'),
+                ),
+                ActionCard(
+                  title: 'View Vitals History',
+                  subtitle: 'Check your rPPG results trend',
+                  icon: Icons.history_outlined,
+                  isDark: true,
+                  accentColor: Colors.amber,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (c) => VitalsHistoryScreen(patientUID: uid),
+                    ),
+                  ),
                 ),
                 ActionCard(
                   title: 'Heart Rate Scan (rPPG)',

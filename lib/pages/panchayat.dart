@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'vitals_history_screen.dart';
 import '../widgets/translated_text.dart';
 import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
@@ -63,6 +64,36 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
       print('Stats Fetch Error: $e');
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _showSearchVitalsDialog() {
+    final TextEditingController uidCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const TranslatedText('Search Patient Vitals'),
+        content: TextField(
+          controller: uidCtrl,
+          decoration: const InputDecoration(hintText: 'Enter Patient UID'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const TranslatedText('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              final uid = uidCtrl.text.trim();
+              if (uid.isNotEmpty) {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (c) => VitalsHistoryScreen(patientUID: uid)),
+                );
+              }
+            },
+            child: const TranslatedText('Search'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -202,6 +233,14 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
                   isDark: true,
                   accentColor: AppColors.panchayatPurple,
                   onTap: () => Navigator.pushNamed(context, '/view_prescription_search'),
+                ),
+                ActionCard(
+                  title: 'Patient Vitals History',
+                  subtitle: 'Search vitals by Patient UID',
+                  icon: Icons.health_and_safety_outlined,
+                  isDark: true,
+                  accentColor: Colors.orange,
+                  onTap: _showSearchVitalsDialog,
                 ),
                 const SizedBox(height: 80),
               ],
