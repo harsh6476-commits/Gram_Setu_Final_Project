@@ -8,7 +8,7 @@ class AppConstants {
   // ── API ────────────────────────────────────────────────────────────────────
   /// 1. Set this to true to use a Public Tunnel (best for mobile demos & judges).
   static const bool useTunnel = true; 
-  static const String tunnelUrl = 'https://yellow-turtles-smoke.loca.lt'; // Live Tunnel Active
+  static const String tunnelUrl = 'https://open-ears-spend.loca.lt'; // Live Tunnel Re-generated
 
   /// 2. If true, all systems connect to the _manualIp below.
   static const bool usePhysicalIp = false; 
