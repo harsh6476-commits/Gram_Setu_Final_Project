@@ -6,10 +6,10 @@ class AppConstants {
   AppConstants._(); // prevent instantiation
 
   // ── API ────────────────────────────────────────────────────────────────────
-  /// 1. Set this to true to use the hardcoded IP below (useful for physical devices).
-  static const bool usePhysicalIp = false; 
+  /// 1. If true, all systems (emulators, other PCs, phones) connect to the host below.
+  static const bool usePhysicalIp = true; 
   
-  /// 2. The LAN IP of the computer running the backend (check backend console log).
+  /// 2. The LAN IP of the computer running the backend.
   static const String _hostIp = '192.168.53.234'; 
 
   /// Base URL is resolved automatically based on the platform:
