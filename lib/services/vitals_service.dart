@@ -8,14 +8,20 @@ class VitalsService {
 
   static Future<bool> addVitals(Vitals vitals) async {
     try {
+      final payload = json.encode(vitals.toJson());
+      print('Uploading vitals to: $_baseUrl/add');
+      print('Payload: $payload');
+
       final response = await http.post(
         Uri.parse('$_baseUrl/add'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode(vitals.toJson()),
+        body: payload,
       );
+
+      print('Vitals upload response: ${response.statusCode} - ${response.body}');
       return response.statusCode == 201;
     } catch (e) {
-      print('Error adding vitals: $e');
+      print('FATAL Error adding vitals: $e');
       return false;
     }
   }

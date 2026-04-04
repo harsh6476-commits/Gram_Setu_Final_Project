@@ -171,7 +171,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   icon: Icons.favorite_border,
                   isDark: true,
                   accentColor: Colors.redAccent,
-                  onTap: () => Navigator.pushNamed(context, '/rppg_monitor'),
+                  onTap: () => Navigator.pushNamed(context, '/rppg_monitor', arguments: uid),
                 ),
                 
                 const SizedBox(height: 60),

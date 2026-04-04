@@ -18,6 +18,26 @@ class RPPGMonitorScreen extends StatefulWidget {
 }
 
 class _RPPGMonitorScreenState extends State<RPPGMonitorScreen> {
+  String? _finalUID;
+  bool _isInit = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInit) {
+       _finalUID = widget.patientUID;
+       if (_finalUID == null) {
+         final args = ModalRoute.of(context)?.settings.arguments;
+         if (args is String) {
+           _finalUID = args;
+         } else if (args is Map && args['patientUID'] != null) {
+           _finalUID = args['patientUID'];
+         }
+       }
+       _isInit = true;
+    }
+  }
+
   CameraController? _controller;
   bool _isPermissionGranted = false;
   bool _isScanning = false;
@@ -92,9 +112,19 @@ class _RPPGMonitorScreenState extends State<RPPGMonitorScreen> {
   }
 
   Future<void> _saveToAtlas() async {
-    final uid = widget.patientUID;
-    if (uid == null) {
-      // If no UID is provided, just return the data to the previous screen
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userData = userProvider.user;
+    
+    // Determine the target patient UID
+    String? uid = _finalUID;
+    if (uid == null || uid.isEmpty) {
+      if (userData != null && userData['role'] == 'patient') {
+        uid = userData['uid']?.toString();
+      }
+    }
+
+    if (uid == null || uid.isEmpty) {
+      // If still no UID is provided, just return the data to the previous screen
       Navigator.pop(context); // Close dialog
       Navigator.pop(context, {'heartRate': _heartRate.toInt(), 'spo2': _spo2.toInt()});
       return;
@@ -102,8 +132,7 @@ class _RPPGMonitorScreenState extends State<RPPGMonitorScreen> {
 
     setState(() => _isSaving = true);
     
-    final user = Provider.of<UserProvider>(context, listen: false).user;
-    final recordedBy = "${user?['role'] ?? 'Patient'} ${user?['name'] ?? ''}".trim();
+    final recordedBy = "${userData?['role'] ?? 'Patient'} ${userData?['name'] ?? ''}".trim();
 
     final vitals = Vitals(
       id: '',
@@ -123,14 +152,13 @@ class _RPPGMonitorScreenState extends State<RPPGMonitorScreen> {
       
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vitals saved to Atlas successfully!'), backgroundColor: Colors.green),
+          const SnackBar(content: Text('Vitals updated in Atlas successfully!'), backgroundColor: Colors.green),
         );
-        Navigator.pop(context); // Go back to dashboard
+        Navigator.pop(context); // Go back
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to save to Atlas. Returning data locally.'), backgroundColor: Colors.red),
+          const SnackBar(content: Text('Atlas update failed. Data returned locally.'), backgroundColor: Colors.red),
         );
-        // Fallback: return data locally
         Navigator.pop(context, {'heartRate': _heartRate.toInt(), 'spo2': _spo2.toInt()});
       }
     }

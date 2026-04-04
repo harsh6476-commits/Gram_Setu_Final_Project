@@ -208,6 +208,14 @@ class _AshaWorkerDashboardState extends State<AshaWorkerDashboard> {
                 accentColor: Colors.orange,
                 onTap: _showSearchVitalsDialog,
               ),
+              ActionCard(
+                title: 'Manual Vitals Entry',
+                subtitle: 'Record BP, Sugar, Temp, etc. for patient',
+                icon: Icons.edit_note_outlined,
+                isDark: true,
+                accentColor: AppColors.primaryTeal,
+                onTap: () => Navigator.pushNamed(context, '/vitals_recorder'),
+              ),
 
               
               const SizedBox(height: 80),
