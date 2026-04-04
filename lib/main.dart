@@ -81,23 +81,30 @@ class GramSetuApp extends StatelessWidget {
           '/health_assistant': (context) => const HealthAssistantScreen(),
           '/profile': (context) => const ProfileDashboard(),
           '/vitals_recorder': (context) => const VitalsRecorderScreen(),
-          '/patient_registration': (context) => const NewPatientRegistrationScreen(),
-          '/doctor_registration': (context) => const NewDoctorRegistrationScreen(),
+          '/patient_registration': (context) =>
+              const NewPatientRegistrationScreen(),
+          '/doctor_registration': (context) =>
+              const NewDoctorRegistrationScreen(),
           '/asha_registration': (context) => const NewAshaRegistrationScreen(),
-          '/panchayat_registration': (context) => const NewPanchayatRegistrationScreen(),
+          '/panchayat_registration': (context) =>
+              const NewPanchayatRegistrationScreen(),
           '/panchayat_auth': (context) => const PanchayatAuthScreen(),
           '/settings': (context) => const SettingsScreen(),
           '/add_patient': (context) => const AddPatientScreen(),
           '/asha_consultation': (context) => const AshaConsultationScreen(),
           '/health_awareness': (context) => const HealthAwarenessScreen(),
           '/edit_profile': (context) => const EditProfileScreen(),
-          '/pending_consultations': (context) => const PendingConsultationsScreen(),
+          '/pending_consultations': (context) =>
+              const PendingConsultationsScreen(),
           '/panchayat_records': (context) => const PanchayatRecordsScreen(),
-          '/consultation_requests': (context) => const ConsultationRequestsScreen(),
-          '/accepted_consultations': (context) => const AcceptedConsultationsScreen(),
+          '/consultation_requests': (context) =>
+              const ConsultationRequestsScreen(),
+          '/accepted_consultations': (context) =>
+              const AcceptedConsultationsScreen(),
           '/search_patient': (context) => const SearchPatientScreen(),
           '/leaderboard': (context) => const LeaderboardScreen(),
-          '/view_prescription_search': (context) => const SearchPrescriptionScreen(),
+          '/view_prescription_search': (context) =>
+              const SearchPrescriptionScreen(),
         };
 
         final builder = routes[settings.name];

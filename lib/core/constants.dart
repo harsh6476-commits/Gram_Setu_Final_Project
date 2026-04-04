@@ -10,6 +10,8 @@ class AppConstants {
   /// Run `ipconfig` on Windows to find it.
   static const String _lanIp = '192.168.52.31';
 
+  
+
   /// Base URL is resolved automatically per platform:
   ///   • Flutter Web          → http://<host>:3000 (auto-detects host)
   ///   • Android Emulator     → http://10.0.2.2:3000
