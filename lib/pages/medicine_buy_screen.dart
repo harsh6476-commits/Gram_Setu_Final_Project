@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../core/app_colors.dart';
 import '../core/models/medicine.dart';
 import '../services/medicine_service.dart';
+import '../widgets/gram_app_bar.dart';
 import '../widgets/translated_text.dart';
-import 'medicine_request_form.dart';
 
 class MedicineBuyScreen extends StatefulWidget {
   const MedicineBuyScreen({super.key});
@@ -14,13 +15,12 @@ class MedicineBuyScreen extends StatefulWidget {
 
 class _MedicineBuyScreenState extends State<MedicineBuyScreen> {
   bool _isLoading = true;
-  List<Medicine> _allMedicines = [];
-  List<Medicine> _filteredMedicines = [];
+  List<Medicine> _medicines = [];
+  String _searchQuery = '';
   String _selectedCategory = 'All';
-  final _searchController = TextEditingController();
 
   final List<String> _categories = [
-    'All', 'Fever', 'Cold', 'Pain Relief', 'Diabetes', 'BP', 'Vitamins', 'Skin Care'
+    'All', 'Fever', 'Cold', 'Pain Relief', 'Diabetes', 'Blood Pressure', 'Vitamins', 'Skin Care', 'Stomach Problems'
   ];
 
   @override
@@ -31,234 +31,58 @@ class _MedicineBuyScreenState extends State<MedicineBuyScreen> {
 
   Future<void> _fetchMedicines() async {
     setState(() => _isLoading = true);
-    final medicines = await MedicineService.getAllMedicines();
+    final meds = await MedicineService.getAllMedicines();
     setState(() {
-      _allMedicines = medicines;
-      _filteredMedicines = medicines;
+      _medicines = meds;
       _isLoading = false;
     });
   }
 
-  void _filterMedicines(String query) {
-    setState(() {
-      _filteredMedicines = _allMedicines.where((med) {
-        final matchesQuery = med.name.toLowerCase().contains(query.toLowerCase()) ||
-            (med.genericName?.toLowerCase().contains(query.toLowerCase()) ?? false);
-        final matchesCategory = _selectedCategory == 'All' || med.category == _selectedCategory;
-        return matchesQuery && matchesCategory;
-      }).toList();
-    });
+  Future<void> _onSearchChange(String val) async {
+    if (val.isEmpty) {
+      _fetchMedicines();
+    } else {
+      final meds = await MedicineService.searchMedicines(val);
+      setState(() => _medicines = meds);
+    }
+  }
+
+  List<Medicine> get filteredMeds {
+    if (_selectedCategory == 'All') return _medicines;
+    return _medicines.where((m) => m.category == _selectedCategory).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const TranslatedText('Buy Medicines'),
-        backgroundColor: theme.cardTheme.color,
-        elevation: 0,
-        iconTheme: IconThemeData(color: theme.iconTheme.color),
+      backgroundColor: AppColors.adaptiveBackground(context),
+      appBar: GramAppBar(
+        roleLabel: 'Essential Medicines',
+        showProfile: false,
       ),
       body: Column(
         children: [
-          _buildSearchAndFilter(),
+          _buildSearchBar(),
+          _buildCategoryFilters(),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
-                    onRefresh: _fetchMedicines,
-                    child: _filteredMedicines.isEmpty
-                        ? _buildEmptyState()
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(20),
-                            itemCount: _filteredMedicines.length,
-                            itemBuilder: (context, index) {
-                              return _buildMedicineCard(_filteredMedicines[index]);
-                            },
-                          ),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchAndFilter() {
-    return Container(
-      color: Theme.of(context).cardTheme.color,
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _filterMedicines,
-              decoration: InputDecoration(
-                hintText: 'Search medicine or salt...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: AppColors.adaptiveBackground(context),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: _categories.map((cat) => _buildCategoryChip(cat)).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryChip(String cat) {
-    final isSelected = _selectedCategory == cat;
-    return GestureDetector(
-      onTap: () {
-        setState(() => _selectedCategory = cat);
-        _filterMedicines(_searchController.text);
-      },
-      child: Container(
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryTeal : AppColors.adaptiveBackground(context),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? AppColors.primaryTeal : AppColors.adaptiveBorder(context)),
-        ),
-        child: Text(
-          cat,
-          style: TextStyle(
-            color: isSelected ? Colors.white : AppColors.adaptiveTextPrimary(context),
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 13,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMedicineCard(Medicine med) {
-    final isLowStock = med.stockQuantity > 0 && med.stockQuantity < 10;
-    final isOutOfStock = med.stockQuantity <= 0 || !med.availability;
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.adaptiveBorder(context)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryTeal.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: med.imageUrl != null 
-                    ? ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(med.imageUrl!, fit: BoxFit.cover))
-                    : const Icon(Icons.medication, color: AppColors.primaryTeal, size: 32),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(med.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text('₹${med.price}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryTeal)),
-                      ],
+            child: _isLoading 
+              ? const Center(child: CircularProgressIndicator())
+              : filteredMeds.isEmpty 
+                ? _buildEmptyState()
+                : GridView.builder(
+                    padding: const EdgeInsets.all(20),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 0.7,
                     ),
-                    if (med.genericName != null)
-                      Text(med.genericName!, style: const TextStyle(fontSize: 13, color: Colors.grey, fontStyle: FontStyle.italic)),
-                    const SizedBox(height: 4),
-                    Text(med.description, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildStockTag(isOutOfStock, isLowStock),
-              if (med.prescriptionRequired)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.description_outlined, color: Colors.orange, size: 12),
-                      SizedBox(width: 4),
-                      Text('Prescription Required', style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
-                    ],
+                    itemCount: filteredMeds.length,
+                    itemBuilder: (context, index) => _buildMedicineCard(filteredMeds[index]),
                   ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: isOutOfStock 
-                  ? () => _notifyMe(med)
-                  : () => _openRequestForm(med),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isOutOfStock ? Colors.grey : AppColors.primaryTeal,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: TranslatedText(
-                isOutOfStock ? 'Notify Me' : 'Request Medicine',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStockTag(bool isOut, bool isLow) {
-    String text = 'In Stock';
-    Color color = Colors.green;
-    if (isOut) {
-      text = 'Out of Stock';
-      color = Colors.red;
-    } else if (isLow) {
-      text = 'Low Stock';
-      color = Colors.orange;
-    }
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-      child: Text(text, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
     );
   }
 
@@ -267,40 +91,137 @@ class _MedicineBuyScreenState extends State<MedicineBuyScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.search_off, size: 80, color: Colors.grey),
+          Icon(Icons.search_off, size: 60, color: Colors.grey.withOpacity(0.5)),
           const SizedBox(height: 16),
-          const TranslatedText('Medicine not available', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          const TranslatedText('Try searching for a different medicine or generic name.', style: TextStyle(color: Colors.grey)),
-          const SizedBox(height: 24),
-          OutlinedButton(
-            onPressed: () {
-              // Manual contact logic
-            },
-            child: const TranslatedText('Ask Pharmacist via Call'),
+          const TranslatedText('Medicine not available', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)),
+          const TranslatedText('Try searching for another medicine', style: TextStyle(color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: TextField(
+        onChanged: (v) {
+          setState(() => _searchQuery = v);
+          _onSearchChange(v);
+        },
+        decoration: InputDecoration(
+          hintText: 'Search for medicnes (e.g. Crocin, Paracetamol)',
+          prefixIcon: const Icon(Icons.search, color: AppColors.primaryTeal),
+          suffixIcon: _searchQuery.isNotEmpty 
+            ? IconButton(icon: const Icon(Icons.clear), onPressed: () {
+                setState(() => _searchQuery = '');
+                _fetchMedicines();
+              })
+            : null,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryFilters() {
+    return SizedBox(
+      height: 48,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: _categories.length,
+        itemBuilder: (context, index) {
+          final isSelected = _selectedCategory == _categories[index];
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: TranslatedText(_categories[index], style: TextStyle(color: isSelected ? Colors.white : AppColors.adaptiveTextPrimary(context), fontWeight: FontWeight.bold)),
+              selected: isSelected,
+              onSelected: (v) => setState(() => _selectedCategory = _categories[index]),
+              selectedColor: AppColors.primaryTeal,
+              backgroundColor: AppColors.adaptiveSurface(context),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMedicineCard(Medicine med) {
+    bool isLow = med.stockQuantity > 0 && med.stockQuantity < 10;
+    bool isOut = med.stockQuantity <= 0 || !med.availability;
+    String statusStr = isOut ? 'Out of Stock' : (isLow ? 'Low Stock' : 'In Stock');
+    Color statusColor = isOut ? Colors.red : (isLow ? Colors.orange : Colors.green);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.adaptiveBorder(context).withOpacity(0.1)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(color: Colors.grey.withOpacity(0.05), borderRadius: const BorderRadius.vertical(top: Radius.circular(20))),
+              child: med.imageUrl != null 
+                ? ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(20)), child: Image.network(med.imageUrl!, fit: BoxFit.cover, errorBuilder: (c,e,s) => const Icon(Icons.medication, size: 50, color: Colors.grey)))
+                : const Icon(Icons.medication, size: 50, color: Colors.grey),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(med.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
+                if (med.genericName != null && med.genericName!.isNotEmpty)
+                  Text(med.genericName!, style: const TextStyle(fontSize: 10, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('₹${med.price}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryTeal, fontSize: 16)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                      child: Text(statusStr, style: TextStyle(color: statusColor, fontSize: 8, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+                if (med.prescriptionRequired)
+                   Padding(padding: const EdgeInsets.only(top: 4), child: Row(children: [const Icon(Icons.description_outlined, size: 10, color: Colors.orange), const SizedBox(width: 4), const TranslatedText('Rx Required', style: TextStyle(fontSize: 8, color: Colors.orange, fontWeight: FontWeight.bold))])),
+                
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 40,
+                  child: ElevatedButton.icon(
+                    onPressed: isOut ? null : () => _callPharmacist(med.pharmacistPhone),
+                    icon: const Icon(Icons.phone, size: 16, color: Colors.white),
+                    label: const TranslatedText('Call Pharmacist', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isOut ? Colors.grey : AppColors.primaryTeal,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  void _notifyMe(Medicine med) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: TranslatedText('We will notify you when ${med.name} is back in stock!')),
-    );
-  }
-
-  void _openRequestForm(Medicine med) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (_, controller) => MedicineRequestForm(medicine: med, scrollController: controller),
-      ),
-    );
+  void _callPharmacist(String phone) async {
+    final uri = Uri.parse('tel:$phone');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: TranslatedText('Unable to open dialer')));
+    }
   }
 }

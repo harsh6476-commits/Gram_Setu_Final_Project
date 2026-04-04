@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/app_colors.dart';
 import '../../core/models/medicine.dart';
+import '../../core/user_provider.dart';
 import '../../services/medicine_service.dart';
 import '../../widgets/translated_text.dart';
 import 'add_medicine_tab.dart';
@@ -26,20 +28,9 @@ class _InventoryTabState extends State<InventoryTab> {
 
   Future<void> _fetchMedicines() async {
     setState(() => _isLoading = true);
-    final medicines = await MedicineService.getAllMedicines();
-    setState(() {
-      _medicines = medicines;
-      _isLoading = false;
-    });
-  }
-
-  Future<void> _searchMedicines(String query) async {
-    if (query.isEmpty) {
-      _fetchMedicines();
-      return;
-    }
-    setState(() => _isLoading = true);
-    final medicines = await MedicineService.searchMedicines(query);
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    final pharmacistId = user?['pharmacistId'] ?? '';
+    final medicines = await MedicineService.getPharmacistInventory(pharmacistId);
     setState(() {
       _medicines = medicines;
       _isLoading = false;
@@ -63,7 +54,7 @@ class _InventoryTabState extends State<InventoryTab> {
           child: Column(
             children: [
               Container(margin: const EdgeInsets.symmetric(vertical: 12), width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
-              const TranslatedText('Edit Medicine', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const TranslatedText('Edit Medicine Detail', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               Expanded(child: AddMedicineTab(editMedicine: med)),
             ],
           ),
@@ -84,18 +75,14 @@ class _InventoryTabState extends State<InventoryTab> {
           padding: const EdgeInsets.all(20),
           child: TextField(
             controller: _searchController,
-            onChanged: (val) {
-              setState(() => _searchQuery = val);
-              _searchMedicines(val);
-            },
+            onChanged: (val) => setState(() => _searchQuery = val),
             decoration: InputDecoration(
-              hintText: 'Search inventory...',
+              hintText: 'Search your inventory...',
               prefixIcon: const Icon(Icons.search, color: AppColors.primaryTeal),
               suffixIcon: _searchQuery.isNotEmpty 
                 ? IconButton(icon: const Icon(Icons.clear), onPressed: () {
                   _searchController.clear();
                   setState(() => _searchQuery = '');
-                  _fetchMedicines();
                 })
                 : null,
             ),
@@ -106,19 +93,24 @@ class _InventoryTabState extends State<InventoryTab> {
             ? const Center(child: CircularProgressIndicator())
             : RefreshIndicator(
                 onRefresh: _fetchMedicines,
-                child: _medicines.isEmpty
-                  ? const Center(child: TranslatedText('No medicines in inventory.'))
+                child: filteredMedicines.isEmpty
+                  ? const Center(child: TranslatedText('No medicines found in your inventory.'))
                   : ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      itemCount: _medicines.length,
+                      itemCount: filteredMedicines.length,
                       itemBuilder: (context, index) {
-                        return _buildMedicineRow(_medicines[index]);
+                        return _buildMedicineRow(filteredMedicines[index]);
                       },
                     ),
               ),
         ),
       ],
     );
+  }
+
+  List<Medicine> get filteredMedicines {
+    if (_searchQuery.isEmpty) return _medicines;
+    return _medicines.where((m) => m.name.toLowerCase().contains(_searchQuery.toLowerCase()) || (m.genericName?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false)).toList();
   }
 
   Widget _buildMedicineRow(Medicine med) {
@@ -132,20 +124,15 @@ class _InventoryTabState extends State<InventoryTab> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.adaptiveBorder(context)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
+        border: Border.all(color: AppColors.adaptiveBorder(context).withOpacity(0.2)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Row(
         children: [
           Container(
             width: 50,
             height: 50,
-            decoration: BoxDecoration(
-              color: stockColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
+            decoration: BoxDecoration(color: stockColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
             child: med.imageUrl != null 
               ? ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.network(med.imageUrl!, fit: BoxFit.cover, errorBuilder: (c, e, s) => Icon(Icons.medication, color: stockColor)))
               : Icon(Icons.medication, color: stockColor),
@@ -166,20 +153,26 @@ class _InventoryTabState extends State<InventoryTab> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(color: stockColor.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-                      child: Text('Stock: ${med.stockQuantity}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: stockColor)),
+                      child: Text('Qty: ${med.stockQuantity}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: stockColor)),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.phone, size: 10, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text(med.pharmacistPhone, style: const TextStyle(fontSize: 10, color: Colors.grey)),
                   ],
                 ),
               ],
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined, color: AppColors.primaryTeal, size: 20),
-            onPressed: () => _openEditMedicine(med),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-            onPressed: () => _confirmDelete(med),
+          Column(
+            children: [
+              IconButton(icon: const Icon(Icons.edit_outlined, color: AppColors.primaryTeal, size: 20), onPressed: () => _openEditMedicine(med)),
+              IconButton(icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20), onPressed: () => _confirmDelete(med)),
+            ],
           ),
         ],
       ),
@@ -190,9 +183,8 @@ class _InventoryTabState extends State<InventoryTab> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const TranslatedText('Delete Medicine'),
-        content: TranslatedText('Are you sure you want to delete ${med.name}? This action cannot be undone.'),
+        content: TranslatedText('Are you sure you want to delete ${med.name}? This will remove it from patient browsing.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const TranslatedText('Cancel')),
           TextButton(

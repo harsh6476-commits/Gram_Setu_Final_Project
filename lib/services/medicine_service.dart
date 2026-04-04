@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/constants.dart';
 import '../core/models/medicine.dart';
-import '../core/models/medicine_request.dart';
 
 class MedicineService {
   static final String _baseUrl = '${AppConstants.baseUrl}/api/medicine';
@@ -31,6 +30,20 @@ class MedicineService {
       return [];
     } catch (e) {
       print('Error searching medicines: $e');
+      return [];
+    }
+  }
+
+  static Future<List<Medicine>> getPharmacistInventory(String pharmacistId) async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/pharmacist/$pharmacistId'));
+      if (response.statusCode == 200) {
+        List<dynamic> data = json.decode(response.body);
+        return data.map((item) => Medicine.fromJson(item)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching pharmacist inventory: $e');
       return [];
     }
   }
@@ -69,71 +82,6 @@ class MedicineService {
       return response.statusCode == 200;
     } catch (e) {
       print('Error deleting medicine: $e');
-      return false;
-    }
-  }
-
-  // Medicine Request Methods
-  static Future<bool> requestMedicine(MedicineRequest request) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/request'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(request.toJson()),
-      );
-      return response.statusCode == 201;
-    } catch (e) {
-      print('Error requesting medicine: $e');
-      return false;
-    }
-  }
-
-  static Future<List<MedicineRequest>> getPatientRequests(String uid) async {
-    try {
-      final response = await http.get(Uri.parse('$_baseUrl/requests/patient/$uid'));
-      if (response.statusCode == 200) {
-        List<dynamic> data = json.decode(response.body);
-        return data.map((item) => MedicineRequest.fromJson(item)).toList();
-      }
-      return [];
-    } catch (e) {
-      print('Error fetching patient requests: $e');
-      return [];
-    }
-  }
-
-  static Future<List<MedicineRequest>> getPharmacistRequests({String? pharmacistId, String? status}) async {
-    try {
-      String query = '';
-      if (pharmacistId != null) query += 'pharmacistId=$pharmacistId&';
-      if (status != null) query += 'requestStatus=$status&';
-      
-      final response = await http.get(Uri.parse('$_baseUrl/requests?$query'));
-      if (response.statusCode == 200) {
-        List<dynamic> data = json.decode(response.body);
-        return data.map((item) => MedicineRequest.fromJson(item)).toList();
-      }
-      return [];
-    } catch (e) {
-      print('Error fetching pharmacist requests: $e');
-      return [];
-    }
-  }
-
-  static Future<bool> updateRequestStatus(String requestId, String status, {String? pharmacistId, String? responseNote}) async {
-    try {
-      final response = await http.put(
-        Uri.parse('$_baseUrl/request/$requestId'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'requestStatus': status,
-          'pharmacistId': pharmacistId,
-          'pharmacistResponse': responseNote,
-        }),
-      );
-      return response.statusCode == 200;
-    } catch (e) {
-      print('Error updating request status: $e');
       return false;
     }
   }

@@ -26,9 +26,12 @@ class _AddMedicineTabState extends State<AddMedicineTab> {
   final _descriptionController = TextEditingController();
   final _manufacturerController = TextEditingController();
   final _imageUrlController = TextEditingController();
-  bool _availability = true;
-  bool _prescriptionRequired = false;
+  final _phoneController = TextEditingController();
   bool _isSaving = false;
+
+  final List<String> _categories = [
+    'General', 'Fever', 'Cold', 'Pain Relief', 'Diabetes', 'Blood Pressure', 'Vitamins', 'Skin Care', 'Stomach Problems'
+  ];
 
   @override
   void initState() {
@@ -44,8 +47,11 @@ class _AddMedicineTabState extends State<AddMedicineTab> {
       _descriptionController.text = widget.editMedicine!.description;
       _manufacturerController.text = widget.editMedicine!.manufacturer;
       _imageUrlController.text = widget.editMedicine!.imageUrl ?? '';
-      _availability = widget.editMedicine!.availability;
-      _prescriptionRequired = widget.editMedicine!.prescriptionRequired;
+      _phoneController.text = widget.editMedicine!.pharmacistPhone;
+    } else {
+       // Pre-fill pharmacist phone from user profile
+       final user = Provider.of<UserProvider>(context, listen: false).user;
+       if (user != null) _phoneController.text = user['phone'] ?? '';
     }
   }
 
@@ -63,14 +69,16 @@ class _AddMedicineTabState extends State<AddMedicineTab> {
       brandName: _brandNameController.text.trim().isNotEmpty ? _brandNameController.text.trim() : null,
       category: _categoryController.text.trim(),
       expiryDate: _expiryDateController.text.trim(),
-      availability: _availability,
+      availability: int.parse(_quantityController.text) > 0,
       price: double.tryParse(_priceController.text) ?? 0.0,
       stockQuantity: int.tryParse(_quantityController.text) ?? 0,
       description: _descriptionController.text.trim(),
       manufacturer: _manufacturerController.text.trim(),
-      prescriptionRequired: _prescriptionRequired,
       imageUrl: _imageUrlController.text.trim().isNotEmpty ? _imageUrlController.text.trim() : null,
       pharmacistId: pharmacistId,
+      pharmacistPhone: _phoneController.text.trim(),
+      pharmacistName: user?['name'],
+      shopName: user?['hospitalName'], // Reusing hospitalName as shopName
     );
 
     bool success;
@@ -83,27 +91,16 @@ class _AddMedicineTabState extends State<AddMedicineTab> {
     if (mounted) {
       setState(() => _isSaving = false);
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: TranslatedText(widget.editMedicine == null ? 'Medicine Added' : 'Medicine Updated'), backgroundColor: Colors.green),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: TranslatedText(widget.editMedicine == null ? 'Medicine Added' : 'Medicine Updated'), backgroundColor: Colors.green));
         if (widget.editMedicine == null) {
           _formKey.currentState!.reset();
           _nameController.clear();
-          _genericNameController.clear();
-          _brandNameController.clear();
-          _expiryDateController.clear();
-          _priceController.clear();
-          _quantityController.text = '0';
-          _descriptionController.clear();
-          _manufacturerController.clear();
-          _imageUrlController.clear();
+          // Reset other controllers if needed
         } else {
           Navigator.pop(context, true);
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: TranslatedText('Failed to save medicine'), backgroundColor: Colors.red),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: TranslatedText('Failed to save medicine. (Possible Duplicate)'), backgroundColor: Colors.red));
       }
     }
   }
@@ -117,6 +114,7 @@ class _AddMedicineTabState extends State<AddMedicineTab> {
         child: Column(
           children: [
             _buildTextField('Medicine Name *', _nameController, Icons.medication_outlined),
+            _buildCategoryDropdown(),
             Row(
               children: [
                 Expanded(child: _buildTextField('Generic Name', _genericNameController, Icons.science_outlined)),
@@ -126,9 +124,9 @@ class _AddMedicineTabState extends State<AddMedicineTab> {
             ),
             Row(
               children: [
-                Expanded(child: _buildTextField('Category', _categoryController, Icons.category_outlined)),
-                const SizedBox(width: 16),
                 Expanded(child: _buildTextField('Expiry (MM/YYYY) *', _expiryDateController, Icons.calendar_today_outlined)),
+                const SizedBox(width: 16),
+                Expanded(child: _buildTextField('Pharmacist Phone *', _phoneController, Icons.phone_outlined, keyboard: TextInputType.phone)),
               ],
             ),
             Row(
@@ -142,20 +140,13 @@ class _AddMedicineTabState extends State<AddMedicineTab> {
             _buildTextField('Description', _descriptionController, Icons.description_outlined, maxLines: 3),
             _buildTextField('Image URL', _imageUrlController, Icons.image_outlined),
             
-            SwitchListTile(
-              title: const TranslatedText('Prescription Required'),
-              value: _prescriptionRequired,
-              onChanged: (v) => setState(() => _prescriptionRequired = v),
-              activeColor: AppColors.primaryTeal,
-            ),
-            
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _handleSave,
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryTeal),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryTeal, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                 child: _isSaving 
                   ? const CircularProgressIndicator(color: Colors.white)
                   : TranslatedText(widget.editMedicine == null ? 'Add Medicine' : 'Save Changes', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
@@ -164,6 +155,29 @@ class _AddMedicineTabState extends State<AddMedicineTab> {
             const SizedBox(height: 40),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryDropdown() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const TranslatedText('Category *', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            value: _categories.contains(_categoryController.text) ? _categoryController.text : 'General',
+            items: _categories.map((c) => DropdownMenuItem(value: c, child: TranslatedText(c))).toList(),
+            onChanged: (v) => setState(() => _categoryController.text = v!),
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primaryTeal),
+              filled: true,
+              fillColor: AppColors.adaptiveBackground(context),
+            ),
+          ),
+        ],
       ),
     );
   }

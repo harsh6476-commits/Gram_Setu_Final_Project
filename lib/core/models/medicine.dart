@@ -13,6 +13,10 @@ class Medicine {
   final bool prescriptionRequired;
   final String? imageUrl;
   final String pharmacistId;
+  final String pharmacistPhone;
+  final String? pharmacistName;
+  final String? shopName;
+  final double? distance;
 
   Medicine({
     required this.id,
@@ -29,6 +33,10 @@ class Medicine {
     this.prescriptionRequired = false,
     this.imageUrl,
     required this.pharmacistId,
+    required this.pharmacistPhone,
+    this.pharmacistName,
+    this.shopName,
+    this.distance,
   });
 
   factory Medicine.fromJson(Map<String, dynamic> json) {
@@ -47,6 +55,10 @@ class Medicine {
       prescriptionRequired: json['prescriptionRequired'] ?? false,
       imageUrl: json['imageUrl'],
       pharmacistId: json['pharmacistId'] ?? '',
+      pharmacistPhone: json['pharmacistPhone'] ?? '',
+      pharmacistName: json['pharmacistName'],
+      shopName: json['shopName'],
+      distance: (json['distance'] != null) ? json['distance'].toDouble() : null,
     );
   }
 
@@ -65,6 +77,10 @@ class Medicine {
       'prescriptionRequired': prescriptionRequired,
       'imageUrl': imageUrl,
       'pharmacistId': pharmacistId,
+      'pharmacistPhone': pharmacistPhone,
+      'pharmacistName': pharmacistName,
+      'shopName': shopName,
+      'distance': distance,
     };
   }
 }
