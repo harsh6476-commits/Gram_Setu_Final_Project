@@ -6,13 +6,13 @@ class AppConstants {
   AppConstants._(); // prevent instantiation
 
   // ── API ────────────────────────────────────────────────────────────────────
-  /// 1. Set this to true to use a Public Tunnel (best for mobile demos & judges).
-  static const bool useTunnel = true; 
-  static const String tunnelUrl = 'https://open-ears-spend.loca.lt'; // Live Tunnel Re-generated
+  /// 1. Set this to true to use a Public Tunnel (Submission Mode).
+  static const bool useTunnel = false; 
+  static const String tunnelUrl = 'https://open-ears-spend.loca.lt'; 
 
-  /// 2. If true, all systems connect to the _manualIp below.
-  static const bool usePhysicalIp = false; 
-  static const String _manualIp = 'localhost'; 
+  /// 2. If true, all systems connect to the _manualIp below (Physical IP Mode).
+  static const bool usePhysicalIp = true; 
+  static const String _manualIp = '192.168.53.234'; 
 
   /// Base URL is resolved automatically for any machine running it:
   static String get baseUrl {
