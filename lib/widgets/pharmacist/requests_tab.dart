@@ -25,12 +25,14 @@ class _RequestsTabState extends State<RequestsTab> {
   }
 
   Future<void> _fetchRequests() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     final user = Provider.of<UserProvider>(context, listen: false).user;
     final pharmacistId = user?['pharmacistId'] ?? '';
     
-    // Status filter is applied in UI for now, but service supports it
-    final requests = await MedicineService.getRequests(pharmacistId: pharmacistId);
+    // Status filtering happens in UI but we fetch all for notifications logic potentially
+    final requests = await MedicineService.getPharmacistRequests(pharmacistId: pharmacistId);
+    if (!mounted) return;
     setState(() {
       _requests = requests;
       _isLoading = false;
@@ -39,7 +41,7 @@ class _RequestsTabState extends State<RequestsTab> {
 
   List<MedicineRequest> get filteredRequests {
     if (_selectedStatus == 'All') return _requests;
-    return _requests.where((r) => r.status == _selectedStatus).toList();
+    return _requests.where((r) => r.requestStatus == _selectedStatus).toList();
   }
 
   @override
@@ -68,7 +70,7 @@ class _RequestsTabState extends State<RequestsTab> {
   }
 
   Widget _buildStatusFilter() {
-    final statuses = ['Pending', 'Accepted', 'Rejected', 'Out for Delivery', 'Delivered', 'Cancelled', 'All'];
+    final statuses = ['Pending', 'Approved', 'Rejected', 'Ready for Pickup', 'Out for Delivery', 'Delivered', 'All'];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -96,8 +98,11 @@ class _RequestsTabState extends State<RequestsTab> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.adaptiveBorder(context)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,78 +110,103 @@ class _RequestsTabState extends State<RequestsTab> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(request.patientName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              _buildStatusIndicator(request.status),
+              Text('UID: ${request.patientUID}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+              _buildStatusIndicator(request.requestStatus),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          Text(request.medicineName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           Row(
             children: [
-              const Icon(Icons.medication, size: 14, color: Colors.grey),
+              const TranslatedText('Quantity Requested: ', style: TextStyle(color: Colors.grey, fontSize: 13)),
+              Text('${request.quantityRequested}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            ],
+          ),
+          if (request.optionalNote != null && request.optionalNote!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text('Note: ${request.optionalNote}', style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey)),
+            ),
+          const Divider(height: 24),
+          Row(
+            children: [
+              const Icon(Icons.person, size: 14, color: Colors.grey),
               const SizedBox(width: 4),
-              Text(request.medicineName ?? 'Unknown Medicine', style: const TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(width: 8),
-              Text('x ${request.quantity}', style: const TextStyle(color: Colors.grey)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
+              Text(request.patientName, style: const TextStyle(fontSize: 12)),
+              const Spacer(),
               const Icon(Icons.phone, size: 14, color: Colors.grey),
               const SizedBox(width: 4),
-              Text(request.phone, style: const TextStyle(fontSize: 12)),
+              Text(request.patientPhone, style: const TextStyle(fontSize: 12)),
             ],
           ),
           const SizedBox(height: 16),
-          if (request.status == 'Pending')
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _updateRequest(request.id, 'Accepted'),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                    child: const TranslatedText('Accept', style: TextStyle(color: Colors.white)),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => _showRejectDialog(request.id),
-                    style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red)),
-                    child: const TranslatedText('Reject'),
-                  ),
-                ),
-              ],
-            )
-          else if (request.status == 'Accepted')
-             SizedBox(
-               width: double.infinity,
-               child: ElevatedButton(
-                 onPressed: () => _updateRequest(request.id, 'Out for Delivery'),
-                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryTeal),
-                 child: const TranslatedText('Mark Out for Delivery', style: TextStyle(color: Colors.white)),
-               ),
-             )
-          else if (request.status == 'Out for Delivery')
-             SizedBox(
-               width: double.infinity,
-               child: ElevatedButton(
-                 onPressed: () => _updateRequest(request.id, 'Delivered'),
-                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                 child: const TranslatedText('Mark Delivered', style: TextStyle(color: Colors.white)),
-               ),
-             ),
+          _buildActionButtons(request),
         ],
       ),
     );
   }
 
+  Widget _buildActionButtons(MedicineRequest request) {
+    if (request.requestStatus == 'Pending') {
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () => _updateStatus(request, 'Approved'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              child: const TranslatedText('Approve', style: TextStyle(color: Colors.white)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => _showRejectDialog(request),
+              style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red)),
+              child: const TranslatedText('Reject'),
+            ),
+          ),
+        ],
+      );
+    } else if (request.requestStatus == 'Approved') {
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () => _updateStatus(request, 'Ready for Pickup'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              child: const TranslatedText('Ready for Pickup', style: TextStyle(color: Colors.white)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () => _updateStatus(request, 'Out for Delivery'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+              child: const TranslatedText('Out for Delivery', style: TextStyle(color: Colors.white)),
+            ),
+          ),
+        ],
+      );
+    } else if (request.requestStatus == 'Out for Delivery' || request.requestStatus == 'Ready for Pickup') {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () => _updateStatus(request, 'Delivered'),
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryTeal),
+          child: const TranslatedText('Mark Delivered', style: TextStyle(color: Colors.white)),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
   Widget _buildStatusIndicator(String status) {
      Color color = Colors.grey;
      if (status == 'Pending') color = Colors.orange;
-     if (status == 'Accepted') color = Colors.green;
+     if (status == 'Approved') color = Colors.green;
      if (status == 'Rejected') color = Colors.red;
-     if (status == 'Delivered') color = Colors.blue;
+     if (status.contains('Delivery') || status.contains('Pickup')) color = Colors.blue;
+     if (status == 'Delivered') color = AppColors.primaryTeal;
      
      return Container(
        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -185,15 +215,24 @@ class _RequestsTabState extends State<RequestsTab> {
      );
   }
 
-  Future<void> _updateRequest(String requestId, String status, {String? reason}) async {
-    final success = await MedicineService.updateRequestStatus(requestId, status, reason: reason);
+  Future<void> _updateStatus(MedicineRequest request, String status, {String? reason}) async {
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    final pharmacistId = user?['pharmacistId'] ?? '';
+    
+    final success = await MedicineService.updateRequestStatus(
+      request.id, 
+      status, 
+      pharmacistId: pharmacistId,
+      responseNote: reason
+    );
+    
     if (success) {
       _fetchRequests();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: TranslatedText('Request $status')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: TranslatedText('Status set to $status')));
     }
   }
 
-  void _showRejectDialog(String requestId) {
+  void _showRejectDialog(MedicineRequest request) {
     final reasonCtrl = TextEditingController();
     showDialog(
       context: context,
@@ -201,14 +240,14 @@ class _RequestsTabState extends State<RequestsTab> {
         title: const TranslatedText('Reject Request'),
         content: TextField(
           controller: reasonCtrl,
-          decoration: const InputDecoration(hintText: 'Enter reason (e.g. Out of stock)'),
+          decoration: const InputDecoration(hintText: 'Reason for rejection'),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const TranslatedText('Cancel')),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _updateRequest(requestId, 'Rejected', reason: reasonCtrl.text.trim());
+              _updateStatus(request, 'Rejected', reason: reasonCtrl.text.trim());
             },
             child: const TranslatedText('Reject', style: TextStyle(color: Colors.red)),
           ),
