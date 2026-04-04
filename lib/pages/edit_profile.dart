@@ -24,6 +24,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _hospitalController = TextEditingController();
   final _ashaIdController = TextEditingController();
   final _panchayatIdController = TextEditingController();
+  final _pharmacistIdController = TextEditingController();
   String? _selectedGender;
   bool _isFetchingLocation = false;
   
@@ -54,6 +55,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _hospitalController.text = _userData?['hospitalName'] ?? '';
         _ashaIdController.text = _userData?['ashaId'] ?? '';
         _panchayatIdController.text = _userData?['panchayatId'] ?? '';
+        _pharmacistIdController.text = _userData?['pharmacistId'] ?? '';
         _selectedGender = _userData?['gender'];
         if (!_genders.contains(_selectedGender)) {
            _selectedGender = null; // reset if invalid
@@ -76,6 +78,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _hospitalController.dispose();
     _ashaIdController.dispose();
     _panchayatIdController.dispose();
+    _pharmacistIdController.dispose();
     super.dispose();
   }
 
@@ -142,6 +145,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         'mciNumber': _userData?['mciNumber'],
         'ashaId': _userData?['ashaId'],
         'panchayatId': _userData?['panchayatId'],
+        'pharmacistId': _userData?['pharmacistId'],
         'name': name,
         'phone': contact,
       };
@@ -186,6 +190,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         };
       }
 
+      if (role == 'pharmacist') {
+        payload['pharmacistId'] = _pharmacistIdController.text.trim();
+        payload['village'] = _villageController.text.trim();
+        payload['block'] = _blockController.text.trim();
+        payload['location'] = {
+          'village': _villageController.text.trim(),
+          'block': _blockController.text.trim()
+        };
+      }
+
       final updatedData = await AuthService.updateProfile(payload);
 
       if (mounted && updatedData != null) {
@@ -200,6 +214,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           case 'doctor': route = '/doctor'; break;
           case 'asha': route = '/asha_worker'; break;
           case 'panchayat': route = '/panchayat'; break;
+          case 'pharmacist': route = '/pharmacist'; break;
           default: route = '/patient'; break;
         }
 
@@ -396,6 +411,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _buildLabel(theme, 'Block'),
               _buildTextField(controller: _blockController, hintText: 'Enter Block', icon: Icons.map_outlined),
             ],
+
+            // Pharmacist fields
+            if ((_userData?['role'] ?? 'patient') == 'pharmacist') ...[
+              _buildLabel(theme, 'Pharmacist ID'),
+              _buildTextField(controller: _pharmacistIdController, hintText: 'Enter Pharmacist ID', icon: Icons.badge_outlined),
+              const SizedBox(height: 20),
+              _buildLabel(theme, 'Village'),
+              _buildTextField(controller: _villageController, hintText: 'Enter Village', icon: Icons.home_outlined),
+              const SizedBox(height: 20),
+              _buildLabel(theme, 'Block'),
+              _buildTextField(controller: _blockController, hintText: 'Enter Block', icon: Icons.map_outlined),
+            ],
             const SizedBox(height: 40),
 
             // Save Button
@@ -464,7 +491,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final success = await AuthService.deleteProfile(user['uid'] ?? user['_id']);
+      final identifiers = {
+        'uid': user['uid'],
+        '_id': user['_id'],
+        'mciNumber': user['mciNumber'],
+        'ashaId': user['ashaId'],
+        'panchayatId': user['panchayatId'],
+        'pharmacistId': user['pharmacistId'],
+      };
+      
+      final success = await AuthService.deleteProfile(identifiers);
       if (success && mounted) {
         Provider.of<UserProvider>(context, listen: false).clearUser();
         Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
