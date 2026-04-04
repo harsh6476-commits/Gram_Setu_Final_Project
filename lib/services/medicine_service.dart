@@ -34,20 +34,6 @@ class MedicineService {
     }
   }
 
-  static Future<List<Medicine>> getPharmacistInventory(String pharmacistId) async {
-    try {
-      final response = await http.get(Uri.parse('$_baseUrl/pharmacist/$pharmacistId'));
-      if (response.statusCode == 200) {
-        List<dynamic> data = json.decode(response.body);
-        return data.map((item) => Medicine.fromJson(item)).toList();
-      }
-      return [];
-    } catch (e) {
-      print('Error fetching pharmacist inventory: $e');
-      return [];
-    }
-  }
-
   static Future<bool> addMedicine(Medicine medicine) async {
     try {
       final response = await http.post(
@@ -83,19 +69,6 @@ class MedicineService {
     } catch (e) {
       print('Error deleting medicine: $e');
       return false;
-    }
-  }
-
-  static Future<Map<String, dynamic>> getPharmacistStats(String pharmacistId) async {
-    try {
-      final response = await http.get(Uri.parse('${AppConstants.baseUrl}/api/stats/pharmacist?pharmacistId=$pharmacistId'));
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      }
-      return {};
-    } catch (e) {
-      print('Error fetching pharmacist stats: $e');
-      return {};
     }
   }
 }

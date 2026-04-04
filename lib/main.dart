@@ -27,8 +27,6 @@ import 'package:gram_setu/pages/new_asha_registration.dart';
 import 'package:gram_setu/pages/new_panchayat_registration.dart';
 import 'package:gram_setu/pages/panchayat_auth_screen.dart';
 import 'package:gram_setu/pages/pharmacist.dart';
-import 'package:gram_setu/pages/pharmacy_portal.dart';
-import 'package:gram_setu/pages/medicine_buy_screen.dart';
 import 'package:gram_setu/pages/pharmacist_auth_screen.dart';
 import 'package:gram_setu/pages/new_pharmacist_registration.dart';
 import 'package:gram_setu/pages/settings_screen.dart';
@@ -44,6 +42,7 @@ import 'package:gram_setu/pages/search_patient_screen.dart';
 import 'package:gram_setu/pages/leaderboard_screen.dart';
 import 'package:gram_setu/pages/search_prescription_screen.dart';
 import 'package:gram_setu/pages/rppg_monitor_screen.dart';
+import 'package:gram_setu/pages/request_medicine_screen.dart';
 
 void main() {
   runApp(
@@ -115,10 +114,9 @@ class GramSetuApp extends StatelessWidget {
               const SearchPrescriptionScreen(),
           '/rppg_monitor': (context) => const RPPGMonitorScreen(),
           '/pharmacist': (context) => const PharmacistDashboard(),
-          '/pharmacy_portal': (context) => const PharmacyPortal(),
-          '/medicine_buy': (context) => const MedicineBuyScreen(),
           '/pharmacist_auth': (context) => const PharmacistAuthScreen(),
           '/pharmacist_registration': (context) => const NewPharmacistRegistrationScreen(),
+          '/request_medicine': (context) => const RequestMedicineScreen(),
         };
 
         final builder = routes[settings.name];
