@@ -187,13 +187,14 @@ class AuthService {
   static Future<Map<String, dynamic>?> loginWithPassword({
     required String identifier,
     required String password,
+    required String role,
   }) async {
     try {
       final loginUrl = '$_baseUrl/api/auth/login';
       final response = await http.post(
         Uri.parse(loginUrl),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'identifier': identifier, 'password': password}),
+        body: jsonEncode({'identifier': identifier, 'password': password, 'role': role}),
       ).timeout(AppConstants.kRequestTimeout);
 
       final data = jsonDecode(response.body);
