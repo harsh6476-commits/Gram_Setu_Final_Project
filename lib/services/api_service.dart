@@ -11,7 +11,7 @@ class ApiService {
     return await http.get(
       Uri.parse('$_baseUrl$endpoint'),
       headers: {
-        'Content-Type': 'application/json',
+        ...AppConstants.apiHeaders,
         if (token != null) 'Authorization': 'Bearer $token',
       },
     );
@@ -22,7 +22,7 @@ class ApiService {
     return await http.post(
       Uri.parse('$_baseUrl$endpoint'),
       headers: {
-        'Content-Type': 'application/json',
+        ...AppConstants.apiHeaders,
         if (token != null) 'Authorization': 'Bearer $token',
       },
       body: jsonEncode(body),
@@ -34,7 +34,7 @@ class ApiService {
     return await http.patch(
       Uri.parse('$_baseUrl$endpoint'),
       headers: {
-        'Content-Type': 'application/json',
+        ...AppConstants.apiHeaders,
         if (token != null) 'Authorization': 'Bearer $token',
       },
       body: jsonEncode(body),

@@ -282,9 +282,11 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
-        child: _buildBottomNavBar(),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
+          child: _buildBottomNavBar(),
+        ),
       ),
     );
   }

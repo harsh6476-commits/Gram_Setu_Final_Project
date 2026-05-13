@@ -319,13 +319,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     side: BorderSide(color: AppColors.emergencyRed),
                     foregroundColor: AppColors.emergencyRed,
                   ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.warning_amber_rounded, size: 20),
-                      SizedBox(width: 8),
-                      Text('Emergency? Continue Without Login'),
-                    ],
+                  child: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.warning_amber_rounded, size: 20),
+                        SizedBox(width: 8),
+                        Text('Emergency? Continue Without Login'),
+                      ],
+                    ),
                   ),
                 ),
               ),

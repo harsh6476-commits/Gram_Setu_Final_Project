@@ -34,7 +34,7 @@ class AuthService {
       final regUrl = '$_baseUrl/api/auth/register';
       final response = await http.post(
         Uri.parse(regUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: AppConstants.apiHeaders,
         body: jsonEncode({
           'name': name,
           'uid': uid,
@@ -77,7 +77,7 @@ class AuthService {
       final regUrl = '$_baseUrl/api/auth/register';
       final response = await http.post(
         Uri.parse(regUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: AppConstants.apiHeaders,
         body: jsonEncode({
           'name': name,
           'mciNumber': mciId,
@@ -116,7 +116,7 @@ class AuthService {
       final regUrl = '$_baseUrl/api/auth/register';
       final response = await http.post(
         Uri.parse(regUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: AppConstants.apiHeaders,
         body: jsonEncode({
           'name': name,
           'ashaId': ashaId,
@@ -155,7 +155,7 @@ class AuthService {
       final regUrl = '$_baseUrl/api/auth/register';
       final response = await http.post(
         Uri.parse(regUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: AppConstants.apiHeaders,
         body: jsonEncode({
           'name': name,
           'panchayatId': panchayatId,
@@ -194,7 +194,7 @@ class AuthService {
       final regUrl = '$_baseUrl/api/auth/register';
       final response = await http.post(
         Uri.parse(regUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: AppConstants.apiHeaders,
         body: jsonEncode({
           'name': name,
           'pharmacistId': pharmacistId,
@@ -228,7 +228,7 @@ class AuthService {
       final loginUrl = '$_baseUrl/api/auth/login';
       final response = await http.post(
         Uri.parse(loginUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: AppConstants.apiHeaders,
         body: jsonEncode({'identifier': identifier, 'password': password, 'role': role}),
       ).timeout(AppConstants.kRequestTimeout);
 
@@ -253,7 +253,7 @@ class AuthService {
       final updateUrl = '$_baseUrl/api/auth/update';
       final response = await http.put(
         Uri.parse(updateUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: AppConstants.apiHeaders,
         body: jsonEncode(data),
       ).timeout(AppConstants.kRequestTimeout);
 
@@ -273,7 +273,7 @@ class AuthService {
       final deleteUrl = '$_baseUrl/api/auth/delete';
       final response = await http.delete(
         Uri.parse(deleteUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: AppConstants.apiHeaders,
         body: jsonEncode(identifiers),
       ).timeout(AppConstants.kRequestTimeout);
 

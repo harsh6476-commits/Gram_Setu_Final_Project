@@ -223,9 +223,11 @@ class _AshaWorkerDashboardState extends State<AshaWorkerDashboard> {
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
-        child: _buildBottomNavBar(),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+          child: _buildBottomNavBar(),
+        ),
       ),
     );
   }

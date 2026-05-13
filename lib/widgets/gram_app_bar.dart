@@ -84,12 +84,15 @@ class GramAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
                 Row(
                   children: [
-                    Text(
-                      roleLabel ?? 'Healthcare',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: theme.textTheme.bodySmall?.color,
+                    Flexible(
+                      child: Text(
+                        roleLabel ?? 'Healthcare',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: theme.textTheme.bodySmall?.color,
+                        ),
                       ),
                     ),
                     if (locationText.isNotEmpty) ...[

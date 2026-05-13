@@ -14,7 +14,7 @@ class VitalsService {
 
       final response = await http.post(
         Uri.parse('$_baseUrl/add'),
-        headers: {'Content-Type': 'application/json'},
+        headers: AppConstants.apiHeaders,
         body: payload,
       );
 

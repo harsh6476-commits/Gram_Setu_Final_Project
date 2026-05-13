@@ -211,6 +211,14 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
                   onTap: () => Navigator.pushNamed(context, '/patient_registration', arguments: {'asWorker': true}),
                 ),
                 ActionCard(
+                  title: 'Book Consultation',
+                  subtitle: 'Request a doctor session for a patient',
+                  icon: Icons.add_box_outlined,
+                  isDark: true,
+                  accentColor: Colors.purpleAccent,
+                  onTap: () => Navigator.pushNamed(context, '/panchayat_consultation'),
+                ),
+                ActionCard(
                   title: 'View Health Records',
                   subtitle: 'Enter Patient UID to retrieve historical data',
                   icon: Icons.history_edu_outlined,
@@ -219,9 +227,9 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
                   onTap: () => Navigator.pushNamed(context, '/search_patient'),
                 ),
                 ActionCard(
-                  title: 'Village Statistics',
-                  subtitle: 'View overall village health analytics',
-                  icon: Icons.analytics_outlined,
+                  title: 'Patient Medical History',
+                  subtitle: 'Search a specific patient by UID to see records',
+                  icon: Icons.manage_search_outlined,
                   isDark: true,
                   accentColor: AppColors.doctorGreen,
                   onTap: () => Navigator.pushNamed(context, '/panchayat_records'),
@@ -256,9 +264,11 @@ class _PanchayatDashboardState extends State<PanchayatDashboard> {
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
-        child: _buildBottomNavBar(),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+          child: _buildBottomNavBar(),
+        ),
       ),
     );
   }

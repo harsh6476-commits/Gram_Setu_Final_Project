@@ -33,27 +33,46 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TranslatedText('Gram Setu',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: theme.textTheme.displayLarge?.color,
-                        ),
-                      ).animate().fadeIn().slideX(begin: -0.2),
-                      const SizedBox(height: 8),
-                      TranslatedText('Healthcare & Rural Network',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: theme.textTheme.bodyMedium?.color,
-                        ),
-                      ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.2),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TranslatedText('Gram Setu',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: theme.textTheme.displayLarge?.color,
+                          ),
+                        ).animate().fadeIn().slideX(begin: -0.2),
+                        const SizedBox(height: 8),
+                        TranslatedText('Healthcare & Rural Network',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: theme.textTheme.bodyMedium?.color,
+                          ),
+                        ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.2),
+                      ],
+                    ),
                   ),
                   Row(
                     children: [
+                      // Network Config Button (No more APK rebuilds!)
+                      IconButton(
+                        onPressed: () {
+                          _showNetworkConfigDialog(context);
+                        },
+                        style: IconButton.styleFrom(
+                          backgroundColor: theme.cardTheme.color,
+                          padding: const EdgeInsets.all(12),
+                          shape: const CircleBorder(),
+                        ),
+                        icon: const Icon(
+                          Icons.wifi_tethering,
+                          color: AppColors.primaryTeal,
+                          size: 24,
+                        ),
+                      ).animate().scale(delay: 200.ms),
+                      const SizedBox(width: 8),
                       // Circular Theme Toggle Button
                       IconButton(
                         onPressed: () => themeProvider.toggleTheme(),
@@ -256,32 +275,93 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               ),
               child: Icon(icon, color: color, size: 32),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: theme.textTheme.titleMedium?.color,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        color: theme.textTheme.titleMedium?.color,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: theme.textTheme.bodySmall?.color,
-                    fontSize: 12,
+                  const SizedBox(height: 4),
+                  Flexible(
+                    child: Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: theme.textTheme.bodySmall?.color,
+                        fontSize: 12,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showNetworkConfigDialog(BuildContext context) {
+    final TextEditingController _urlController = TextEditingController(
+      text: AppConstants.customBaseUrl ?? AppConstants.baseUrl,
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Backend Network Config'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Enter the full URL or IP address of the backend.\nExample: http://10.31.44.55:3000\nor https://your-tunnel.loca.lt',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _urlController,
+                decoration: const InputDecoration(
+                  labelText: 'Backend URL',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                AppConstants.customBaseUrl = _urlController.text.trim();
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Backend URL set to: ${AppConstants.customBaseUrl}'),
+                    backgroundColor: AppColors.primaryTeal,
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryTeal),
+              child: const Text('Save', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
     );
   }
 }

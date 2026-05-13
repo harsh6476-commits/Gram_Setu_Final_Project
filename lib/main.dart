@@ -4,7 +4,6 @@ import 'package:gram_setu/core/theme.dart';
 import 'package:gram_setu/core/theme_provider.dart';
 import 'package:gram_setu/core/user_provider.dart';
 import 'package:gram_setu/core/language_provider.dart';
-
 import 'package:gram_setu/pages/home.dart';
 import 'package:gram_setu/pages/splash.dart';
 import 'package:gram_setu/pages/login.dart';
@@ -101,6 +100,7 @@ class GramSetuApp extends StatelessWidget {
           '/settings': (context) => const SettingsScreen(),
           '/add_patient': (context) => const AddPatientScreen(),
           '/asha_consultation': (context) => const AshaConsultationScreen(),
+          '/panchayat_consultation': (context) => const AshaConsultationScreen(bookedBy: 'panchayat'),
           '/health_awareness': (context) => const HealthAwarenessScreen(),
           '/edit_profile': (context) => const EditProfileScreen(),
           '/pending_consultations': (context) =>

@@ -1,217 +1,75 @@
-# 🌉 Gram Setu — Rural Telemedicine Mobile App
+# 🌉 Gram Setu — Rural Telemedicine & Healthcare
 
-> **Setu Banao, Sehat Pao** — Build the bridge. Reach the last mile.
+> **Setu Banao, Sehat Pao** — Building the bridge for rural health at the last mile.
 
-Gram Setu is a mobile telemedicine application built with **Flutter & Dart**, designed to connect rural patients in India with qualified doctors via live video consultation — in their own language, on any Android device, with no extra hardware required.
-
----
-
-## 📱 Overview
-
-600 million+ rural Indians lack meaningful access to healthcare. Doctors are concentrated in cities, language barriers block diagnosis, and digital health infrastructure is virtually nonexistent at the last mile.
-
-Gram Setu bridges that gap with:
-- 📹 Live video consultations between patients and doctors
-- 💓 Contactless heart rate monitoring via the phone camera (rPPG)
-- 🌐 Dynamic multilingual UI powered by Sarvam AI
-- 🩺 An active consultation dashboard for doctors
+Gram Setu is a comprehensive mobile platform designed for the rural Indian landscape. Built with **Flutter & Node.js**, it connects patients, doctors, ASHA workers, and pharmacists in a unified ecosystem supported by live vitals monitoring and multilingual AI.
 
 ---
 
-## ✨ Features
+## 🏥 Module Overview
 
-### 1. Video Call Module
-- Doctors launch calls directly from the **Active Consultations** screen
-- App requests camera and microphone permissions on launch
-- Displays live camera feed fullscreen
-- Single **Hang Up** button returns the doctor to the dashboard
+Gram Setu provides specialized portals for each stakeholder:
 
-### 2. rPPG Vitals Monitoring
-- Uses **Remote Photoplethysmography (rPPG)** to estimate heart rate from the phone's front camera
-- Powered by the [rPPG-Toolbox](https://github.com/ubicomplab/rPPG-Toolbox) by UbiComp Lab
-- Zero wearables, zero cost, real clinical value
+*   **👤 Patient**: Remote consultation booking, health history, and vital tracking.
+*   **🩺 Doctor**: Digital clinic with video calls, rPPG heart rate monitoring, and e-prescriptions.
+*   **👩‍⚕️ ASHA Worker**: Community health management, patient registration, and local outreach.
+*   **🏛️ Panchayat**: Village-level health statistics and administrative oversight.
+*   **💊 Pharmacy**: Digital inventory management and a medicine marketplace for village users.
 
-### 3. Multilingual Support
-- Language selector button in the app header
-- Powered by the **Sarvam AI Translation API**
-- Supports Hindi, Tamil, Bengali, Telugu, and more
-- Entire UI translates dynamically on language change
+---
 
-### 4. Doctor Consultation Dashboard
-- Active consultations view for doctors
-- One-tap video call launch per patient
-- Real-time rPPG vitals display during calls
+## ✨ Key Features
+
+1.  **Contactless Vitals (rPPG)**: Heart rate and SpO2 estimation using only the phone's front camera (no wearables required).
+2.  **Multilingual UI**: Dynamic translation across the entire app powered by **Sarvam AI**.
+3.  **Real-time Consultations**: Video and status-based matching between rural patients and remote doctors.
+4.  **Village Dashboard**: Analytics for local authorities to track health trends.
+5.  **Medicine Hub**: Search local pharmacies and call them directly for medicines.
+
+---
+
+## 🚀 Quick Start Guide
+
+> ⚠️ **IMPORTANT**: You must run the **Backend** and the **Flutter App** simultaneously.
+
+### 1. Start the Backend
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### 2. Connect Your Mobile Device (Hackathon Setup)
+If running on a **Physical Phone**, the app needs to know your laptop's address.
+Open `lib/core/constants.dart` and choose your method:
+
+#### Method A: Public Tunnel (Best for Remote/Judges)
+1. Run `npm run tunnel` in your backend folder.
+2. Copy the URL (e.g., `https://xyz.loca.lt`).
+3. Set `useTunnel = true` and paste the URL in `tunnelUrl`.
+
+#### Method B: Local Network (Physical IP)
+1. Get your computer's IP (Windows: `ipconfig` -> `IPv4 Address`).
+2. Set `usePhysicalIp = true` and paste your IP in `_manualIp`.
+3. Ensures your phone and laptop are on the **Same Wi-Fi**.
+
+### 3. Run the App
+```bash
+# Get dependencies
+flutter pub get
+
+# Launch app
+flutter run
+```
 
 ---
 
 ## 🛠 Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | Flutter (Dart) |
-| Vitals Monitoring | rPPG-Toolbox (UbiComp Lab) |
-| Translation | Sarvam AI API |
-| Video Calls | WebRTC-ready architecture |
-| State Management | Provider / Riverpod |
-| Platform | Android & iOS |
-
----
-
-## 🚀 Installation & Running Guide
-
-> ⚠️ **The app requires BOTH the backend and the Flutter frontend to be running at the same time.**
-
----
-
-### Step 1 — Start the Backend (Node.js)
-
-1. Open a terminal and navigate to the `backend/` folder:
-   ```bash
-   cd backend
-   npm install
-   npm start
-   ```
-
-2. Once the server starts, you will see output like this in your terminal:
-   ```
-   ✅ Server running on:
-   🖥  Local:    http://localhost:3000
-   🌐 Network:  http://192.168.1.5:3000   ← YOUR IPv4 ADDRESS WILL APPEAR HERE
-   ```
-
-3. **Copy the Network IP address** (e.g. `192.168.1.5`). You will need it in the next step.
-
-> 💡 **Don't see a Network address?** Find your IPv4 manually:
-> - **Windows**: Open Command Prompt → run `ipconfig` → look for `IPv4 Address`
-> - **Mac/Linux**: Open Terminal → run `ifconfig` or `ip a` → look for `inet` under your Wi-Fi adapter
-
----
-
-### Step 2 — Configure the Flutter App with YOUR IPv4 Address
-
-> 🔴 **THIS STEP IS MANDATORY IF YOU ARE RUNNING THE APP ON A PHYSICAL MOBILE DEVICE.**
-> Without this, the app will not connect to your backend and nothing will work.
-
-Open this file in your code editor:
-
-```
-lib/core/constants.dart
-```
-
-You will see something like this:
-
-```dart
-// ─────────────────────────────────────────────────────────────
-// JUDGES / EVALUATORS — READ THIS CAREFULLY
-// ─────────────────────────────────────────────────────────────
-//
-// If you are running the app on a PHYSICAL Android/iOS device:
-//
-//   1. Set usePhysicalIp = true
-//   2. Replace the IP below with YOUR computer's IPv4 address
-//      (the one shown in the backend terminal after npm start)
-//
-// If you are running on an EMULATOR or WEB, leave it as false.
-// ─────────────────────────────────────────────────────────────
-
-const bool usePhysicalIp = false;        // ← Change to TRUE for physical device
-
-const String _manualIp  = '192.168.1.5'; // ← REPLACE THIS WITH YOUR IPv4 ADDRESS
-```
-
-#### ✅ If running on a physical phone:
-```dart
-const bool usePhysicalIp = true;
-const String _manualIp  = 'YOUR.COMPUTER.IP.HERE'; // e.g. '192.168.1.42'
-```
-
-#### ✅ If running on an emulator or browser:
-```dart
-const bool usePhysicalIp = false; // No changes needed — localhost works automatically
-```
-
-> ⚠️ **Your phone and your computer MUST be connected to the same Wi-Fi network.**
-> The app will not reach the backend over mobile data or a different network.
-
----
-
-### Step 3 — Run the Flutter App
-
-```bash
-# Install dependencies
-flutter pub get
-
-# Run on a connected Android device or emulator
-flutter run
-
-# Run on iOS simulator (macOS only)
-flutter run -d ios
-```
-
----
-
-## 🌐 Environment Variables
-
-Create a `.env` file in the root directory (using `flutter_dotenv`):
-
-```env
-SARVAM_API_KEY=your_sarvam_api_key_here
-SARVAM_API_URL=https://api.sarvam.ai/translate
-```
-
-Add `flutter_dotenv` to `pubspec.yaml`:
-
-```yaml
-dependencies:
-  flutter_dotenv: ^5.1.0
-```
-
-Load it in `main.dart`:
-
-```dart
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-void main() async {
-  await dotenv.load(fileName: ".env");
-  runApp(MyApp());
-}
-```
-
-> ⚠️ Add `.env` to your `.gitignore`. Never commit API keys to version control.
-
----
-
-## 🔬 rPPG Integration
-
-Gram Setu uses the [rPPG-Toolbox](https://github.com/ubicomplab/rPPG-Toolbox) for contactless heart rate estimation.
-
-**How it works:**
-1. The front camera captures a continuous video feed via Flutter's `camera` plugin
-2. rPPG detects subtle color changes in the face caused by blood flow (photoplethysmography)
-3. Heart rate (BPM) is estimated and displayed in real time — no wearables required
-
-All rPPG logic is isolated in `lib/services/rppg_service.dart`.
-
-**Key Flutter packages used:**
-```yaml
-dependencies:
-  camera: ^0.10.5
-  permission_handler: ^11.0.1
-```
-
----
-
-## 🌍 Multilingual Support (Sarvam AI)
-
-| Language | Code |
-|---|---|
-| Hindi | hi |
-| Tamil | ta |
-| Bengali | bn |
-| Telugu | te |
-| English | en |
-
-All translation logic lives in `lib/services/translation_service.dart`. Language state is managed globally via `lib/providers/language_provider.dart`.
+*   **Frontend**: Flutter (Dart) with Provider
+*   **Backend**: Node.js, Express, MongoDB Atlas
+*   **AI/Vitals**: Sarvam AI (Translation), rPPG-Toolbox (Pulse detection)
+*   **Tooling**: Localtunnel (Public Gateway)
 
 ---
 
@@ -220,47 +78,34 @@ All translation logic lives in `lib/services/translation_service.dart`. Language
 ```
 gram_setu/
 ├── lib/
-│   ├── main.dart
-│   ├── core/
-│   │   └── constants.dart              # ← IPv4 config lives here
-│   ├── screens/
-│   │   ├── video_call_screen.dart
-│   │   ├── rppg_monitor_screen.dart
-│   │   ├── active_consultations.dart
-│   │   └── ...
-│   ├── services/
-│   │   ├── translation_service.dart
-│   │   └── rppg_service.dart
-│   ├── providers/
-│   │   └── language_provider.dart
-│   ├── widgets/
-│   └── models/
+│   ├── main.dart             # Route registry
+│   ├── core/                 # Theme, Providers, Constants
+│   ├── pages/                # All Screen widgets
+│   ├── services/             # API and Vitals logic
+│   ├── widgets/              # Reusable UI components
+│   └── models/               # Client-side data models
 ├── backend/
-├── android/
-├── ios/
-├── assets/
-├── pubspec.yaml
-├── .env                                # API keys (not committed)
-└── README.md
+│   ├── server.js             # Entry point
+│   ├── routes/               # Express API routes
+│   └── models/               # MongoDB Schemas
+├── assets/                   # Images and Icons
+└── pubspec.yaml              # App configuration
 ```
 
 ---
 
-## 📋 How It Works
+## 📋 Roadmap
+- [x] Live Video Consultations
+- [x] rPPG Pulse Monitoring
+- [x] Multilingual Support (Sarvam AI)
+- [x] Pharmacy Marketplace
+- [x] ASHA Worker Outreach portal
+- [ ] Offline-First Cache
+- [ ] District Health API Integration
 
-```
-Patient                          Doctor
-  │                                │
-  ├─ Opens app                     │
-  ├─ Selects language (Sarvam AI)  │
-  ├─ Joins consultation queue      │
-  │                                ├─ Views Active Consultations
-  │                                ├─ Taps video call button
-  │◄──────── Video Call ──────────►│
-  │  (rPPG monitors heart rate)    │
-  │                                ├─ Diagnoses & advises
-  └─ Hang up → back to home        └─ Hang up → back to dashboard
-```
+---
+
+> Built with ❤️ for rural India.
 
 ---
 

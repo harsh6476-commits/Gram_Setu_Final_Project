@@ -235,9 +235,11 @@ class _PharmacistDashboardState extends State<PharmacistDashboard> {
             child: const Icon(Icons.add, color: Colors.white),
           )
         : null,
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
-        child: _buildBottomNavBar(),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+          child: _buildBottomNavBar(),
+        ),
       ),
     );
   }

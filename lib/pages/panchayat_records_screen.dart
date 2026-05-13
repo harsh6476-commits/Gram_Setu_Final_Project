@@ -32,7 +32,7 @@ class _PanchayatRecordsScreenState extends State<PanchayatRecordsScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final response = await ApiService.get('/consultations/user/$uid');
+      final response = await ApiService.get('/consultation/user/$uid');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {

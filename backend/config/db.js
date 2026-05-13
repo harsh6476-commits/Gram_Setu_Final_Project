@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
     try {
-        const uri = process.env.MONGO_URI || 'mongodb+srv://opg7386_db_user:tmZTuN7LUxxYGgbP@cluster0.h8hfawa.mongodb.net/gram_setu?retryWrites=true&w=majority';
+        const uri = process.env.MONGO_URI || 'mongodb+srv://harshprajapathp45_db_user:nM6StVL8uFQDefbE@cluster0.n7sd8bd.mongodb.net/gram_setu?retryWrites=true&w=majority&appName=Cluster0';
         // Add a 5s timeout to avoid long hangs
         const conn = await mongoose.connect(uri, {
             serverSelectionTimeoutMS: 5000

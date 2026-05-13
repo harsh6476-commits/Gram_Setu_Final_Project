@@ -15,18 +15,18 @@ if ($ip) {
         $found = $false
         
         $newContent = $content | ForEach-Object {
-            if ($_ -match "static const String kBaseUrl") {
+            if ($_ -match "static const String _manualIp") {
                 $found = $true
-                return "  static const String kBaseUrl = 'http://$($ip):3000';"
+                return "  static const String _manualIp = '$($ip)';"
             }
             return $_
         }
         
         if ($found) {
             $newContent | Set-Content $filePath
-            Write-Host "✅ Updated $filePath with the new IP." -ForegroundColor Green
+            Write-Host "✅ Updated $filePath with the new IP ($ip)." -ForegroundColor Green
         } else {
-            Write-Host "❌ Could not find kBaseUrl in $filePath" -ForegroundColor Red
+            Write-Host "❌ Could not find _manualIp in $filePath" -ForegroundColor Red
         }
     } else {
         Write-Host "❌ Could not find file: $filePath" -ForegroundColor Red

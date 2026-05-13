@@ -135,4 +135,28 @@ router.get('/count/:uid', async (req, res) => {
     }
 });
 
+// GET /api/consultation/user/:uid
+router.get('/user/:uid', async (req, res) => {
+    try {
+        const consultations = await Consultation.find({ 
+            patientUID: req.params.uid 
+        }).sort({ createdAt: -1 });
+        
+        // Map to standard format expected by the frontend
+        const records = consultations.map(c => ({
+            id: c._id,
+            problem: c.reason,
+            status: c.status,
+            createdAt: c.createdAt,
+            doctorId: c.acceptedByDoctorId,
+            doctorName: c.acceptedByDoctorName
+        }));
+
+        res.status(200).json({ success: true, records });
+    } catch (error) {
+        console.error('Fetch User Consultations Error:', error);
+        res.status(500).json({ success: false, message: 'Server error fetching records' });
+    }
+});
+
 module.exports = router;

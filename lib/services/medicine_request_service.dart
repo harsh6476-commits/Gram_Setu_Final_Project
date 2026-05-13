@@ -26,7 +26,7 @@ class MedicineRequestService {
     try {
       final response = await http.patch(
         Uri.parse('$_baseUrl/update/$id'),
-        headers: {'Content-Type': 'application/json'},
+        headers: AppConstants.apiHeaders,
         body: json.encode({'status': status}),
       );
       return response.statusCode == 200;
@@ -40,7 +40,7 @@ class MedicineRequestService {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/add'),
-        headers: {'Content-Type': 'application/json'},
+        headers: AppConstants.apiHeaders,
         body: json.encode(request.toJson()),
       );
       return response.statusCode == 201;

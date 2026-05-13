@@ -70,16 +70,18 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TranslatedText(
-                          'Hello, ${userName.split(' ').first} 👋',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.adaptiveTextPrimary(context)),
-                        ),
-                        const SizedBox(height: 4),
-                        TranslatedText('How are you feeling today?', style: TextStyle(fontSize: 14, color: AppColors.adaptiveTextSecondary(context))),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TranslatedText(
+                            'Hello, ${userName.split(' ').first} 👋',
+                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.adaptiveTextPrimary(context)),
+                          ),
+                          const SizedBox(height: 4),
+                          TranslatedText('How are you feeling today?', style: TextStyle(fontSize: 14, color: AppColors.adaptiveTextSecondary(context))),
+                        ],
+                      ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -188,9 +190,11 @@ class _PatientDashboardState extends State<PatientDashboard> {
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
-        child: _buildBottomNavBar(),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+          child: _buildBottomNavBar(),
+        ),
       ),
     );
   }
