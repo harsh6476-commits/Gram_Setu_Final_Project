@@ -56,23 +56,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   ),
                   Row(
                     children: [
-                      // Network Config Button (No more APK rebuilds!)
-                      IconButton(
-                        onPressed: () {
-                          _showNetworkConfigDialog(context);
-                        },
-                        style: IconButton.styleFrom(
-                          backgroundColor: theme.cardTheme.color,
-                          padding: const EdgeInsets.all(12),
-                          shape: const CircleBorder(),
-                        ),
-                        icon: const Icon(
-                          Icons.wifi_tethering,
-                          color: AppColors.primaryTeal,
-                          size: 24,
-                        ),
-                      ).animate().scale(delay: 200.ms),
-                      const SizedBox(width: 8),
                       // Circular Theme Toggle Button
                       IconButton(
                         onPressed: () => themeProvider.toggleTheme(),
@@ -313,55 +296,4 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     );
   }
 
-  void _showNetworkConfigDialog(BuildContext context) {
-    final TextEditingController _urlController = TextEditingController(
-      text: AppConstants.customBaseUrl ?? AppConstants.baseUrl,
-    );
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Backend Network Config'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Enter the full URL or IP address of the backend.\nExample: http://10.31.44.55:3000\nor https://your-tunnel.loca.lt',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _urlController,
-                decoration: const InputDecoration(
-                  labelText: 'Backend URL',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                AppConstants.customBaseUrl = _urlController.text.trim();
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Backend URL set to: ${AppConstants.customBaseUrl}'),
-                    backgroundColor: AppColors.primaryTeal,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryTeal),
-              child: const Text('Save', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }

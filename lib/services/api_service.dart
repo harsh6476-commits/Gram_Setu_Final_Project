@@ -8,36 +8,48 @@ class ApiService {
 
   static Future<http.Response> get(String endpoint) async {
     final token = await AuthService.getToken();
-    return await http.get(
-      Uri.parse('$_baseUrl$endpoint'),
-      headers: {
-        ...AppConstants.apiHeaders,
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-    );
+    try {
+      return await http.get(
+        Uri.parse('$_baseUrl$endpoint'),
+        headers: {
+          ...AppConstants.apiHeaders,
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(AppConstants.kRequestTimeout);
+    } catch (e) {
+      throw Exception('Network error or server unavailable: $e');
+    }
   }
 
   static Future<http.Response> post(String endpoint, Map<String, dynamic> body) async {
     final token = await AuthService.getToken();
-    return await http.post(
-      Uri.parse('$_baseUrl$endpoint'),
-      headers: {
-        ...AppConstants.apiHeaders,
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(body),
-    );
+    try {
+      return await http.post(
+        Uri.parse('$_baseUrl$endpoint'),
+        headers: {
+          ...AppConstants.apiHeaders,
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body),
+      ).timeout(AppConstants.kRequestTimeout);
+    } catch (e) {
+      throw Exception('Network error or server unavailable: $e');
+    }
   }
 
   static Future<http.Response> patch(String endpoint, Map<String, dynamic> body) async {
     final token = await AuthService.getToken();
-    return await http.patch(
-      Uri.parse('$_baseUrl$endpoint'),
-      headers: {
-        ...AppConstants.apiHeaders,
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(body),
-    );
+    try {
+      return await http.patch(
+        Uri.parse('$_baseUrl$endpoint'),
+        headers: {
+          ...AppConstants.apiHeaders,
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body),
+      ).timeout(AppConstants.kRequestTimeout);
+    } catch (e) {
+      throw Exception('Network error or server unavailable: $e');
+    }
   }
 }

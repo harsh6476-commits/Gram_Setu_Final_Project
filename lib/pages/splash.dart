@@ -1,8 +1,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
 import '../core/app_colors.dart';
 import '../core/constants.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -11,18 +14,46 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  String _statusText = 'Initializing...';
+
   @override
   void initState() {
     super.initState();
-    _navigateToHome();
+    _checkBackendHealth();
   }
 
-  Future<void> _navigateToHome() async {
-    await Future.delayed(const Duration(milliseconds: 2500));
-    if (!mounted) return;
-    
-    // As requested, always route to role selection (/home) when opening
-    Navigator.pushReplacementNamed(context, '/home');
+  Future<void> _checkBackendHealth() async {
+    int retries = 0;
+    while (true) {
+      if (!mounted) return;
+      try {
+        setState(() {
+          _statusText = retries == 0 
+            ? 'Connecting to Gram Setu services...' 
+            : 'Server waking up... (Attempt ${retries + 1})';
+        });
+
+        final response = await http.get(
+          Uri.parse('${AppConstants.baseUrl}/health'),
+          headers: AppConstants.apiHeaders,
+        ).timeout(const Duration(seconds: 5));
+
+        if (response.statusCode == 200) {
+          setState(() {
+            _statusText = 'Connected successfully!';
+          });
+          await Future.delayed(const Duration(milliseconds: 800));
+          if (!mounted) return;
+          Navigator.pushReplacementNamed(context, '/home');
+          return; // Exit loop
+        }
+      } catch (e) {
+        // Failed to connect, will retry
+      }
+      
+      retries++;
+      await Future.delayed(const Duration(seconds: 3)); // Wait before retry
+    }
   }
 
   @override
@@ -96,6 +127,17 @@ class _SplashScreenState extends State<SplashScreen> {
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryTeal),
               ),
             ).animate().fadeIn(delay: 1.5.seconds),
+            
+            const SizedBox(height: 24),
+            
+            Text(
+              _statusText,
+              style: TextStyle(
+                color: AppColors.adaptiveTextSecondary(context),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ).animate().fadeIn(delay: 1.8.seconds),
           ],
         ),
       ),
