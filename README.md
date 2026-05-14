@@ -59,7 +59,6 @@ npm install
 **Environment Variables:**
 Create a `.env` file inside the `backend` folder using the provided `.env.example` template:
 ```env
-PORT=3000
 MONGO_URI=mongodb+srv://<user>:<pass>@cluster0...
 JWT_SECRET=your_jwt_secret
 ```
