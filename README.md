@@ -1,135 +1,99 @@
-# 🌉 Gram Setu — Rural Telemedicine & Healthcare
-
-> **Setu Banao, Sehat Pao** — Building the bridge for rural health at the last mile.
-
-Gram Setu is a comprehensive mobile platform designed for the rural Indian landscape. Built with **Flutter & Node.js**, it connects patients, doctors, ASHA workers, and pharmacists in a unified ecosystem supported by live vitals monitoring and multilingual AI.
+# Gram Setu 🏥
+**Swasthya Seva Aapke Dwar — A production-ready healthcare management platform for rural India.**
 
 ---
 
-## 🏥 Module Overview
+## 📖 Problem Statement
+In rural communities, maintaining synchronized health records between Panchayat officials, ASHA workers, and remote Doctors is challenging. Lack of infrastructure leads to fragmented patient histories, delayed consultations, and disconnected healthcare workflows. Gram Setu solves this by bridging the gap via a unified, cloud-connected mobile application.
 
-Gram Setu provides specialized portals for each stakeholder:
+## ✨ Features
+* **Role-Based Dashboards:** Dedicated secure portals for Patients, ASHA Workers, Doctors, and Panchayat Members.
+* **Remote Consultations:** Patients and ASHA workers can request consultations from available doctors.
+* **Prescription Management:** Doctors can issue digital prescriptions linked securely to Patient UIDs.
+* **Cloud Sync:** Real-time data synchronization powered by MongoDB Atlas.
+* **Smart UI/UX:** Built with Flutter for a smooth, cross-platform experience.
 
-*   **👤 Patient**: Remote consultation booking, health history, and vital tracking.
-*   **🩺 Doctor**: Digital clinic with video calls, rPPG heart rate monitoring, and e-prescriptions.
-*   **👩‍⚕️ ASHA Worker**: Community health management, patient registration, and local outreach.
-*   **🏛️ Panchayat**: Village-level health statistics and administrative oversight.
-*   **💊 Pharmacy**: Digital inventory management and a medicine marketplace for village users.
-
----
-
-## ✨ Key Features
-
-1.  **Contactless Vitals (rPPG)**: Heart rate and SpO2 estimation using only the phone's front camera (no wearables required).
-2.  **Multilingual UI**: Dynamic translation across the entire app powered by **Sarvam AI**.
-3.  **Real-time Consultations**: Video and status-based matching between rural patients and remote doctors.
-4.  **Village Dashboard**: Analytics for local authorities to track health trends.
-5.  **Medicine Hub**: Search local pharmacies and call them directly for medicines.
+## 🛠️ Tech Stack
+* **Frontend:** Flutter & Dart
+* **Backend:** Node.js & Express.js
+* **Database:** MongoDB Atlas
+* **Deployment:** Render (Live Production Cloud)
 
 ---
 
-## 🚀 Quick Start Guide
+## 🏗️ Architecture Diagram
+```text
+┌─────────────────┐       HTTPS       ┌────────────────────┐       TLS       ┌───────────────┐
+│                 │   (REST APIs)     │                    │  (Mongoose)     │               │
+│  Flutter App    ├──────────────────►│  Render Hosted     ├────────────────►│ MongoDB Atlas │
+│  (Android/iOS)  │                   │  Node.js Backend   │                 │ Cloud Cluster │
+│                 │                   │                    │                 │               │
+└─────────────────┘                   └────────────────────┘                 └───────────────┘
+```
 
-> ⚠️ **IMPORTANT**: You must run the **Backend** and the **Flutter App** simultaneously.
+---
 
-### 1. Start the Backend
+## 📱 Live Demo
+* **Backend API Base URL:** `https://gram-setu-backend.onrender.com/api`
+* **Health Check Ping:** `https://gram-setu-backend.onrender.com/health`
+
+*(Note: The Render backend sleeps after 15 minutes of inactivity. The Flutter app is programmed to gracefully wait and display a "Server waking up..." message during cold starts).*
+
+---
+
+## ⚙️ Installation & Setup
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/harsh6476-commits/Gram_Setu_Final_Project.git
+cd Gram_Setu_Final_Project
+```
+
+### 2. Backend Setup
+The backend is completely separated into the `/backend` folder.
 ```bash
 cd backend
 npm install
+```
+
+**Environment Variables:**
+Create a `.env` file inside the `backend` folder using the provided `.env.example` template:
+```env
+PORT=3000
+MONGO_URI=mongodb+srv://<user>:<pass>@cluster0...
+JWT_SECRET=your_jwt_secret
+```
+
+**Run Locally:**
+```bash
 npm run dev
 ```
 
-### 2. Connect Your Mobile Device (Hackathon Setup)
-If running on a **Physical Phone**, the app needs to know your laptop's address.
-Open `lib/core/constants.dart` and choose your method:
-
-#### Method A: Public Tunnel (Best for Remote/Judges)
-1. Run `npm run tunnel` in your backend folder.
-2. Copy the URL (e.g., `https://xyz.loca.lt`).
-3. Set `useTunnel = true` and paste the URL in `tunnelUrl`.
-
-#### Method B: Local Network (Physical IP)
-1. Get your computer's IP (Windows: `ipconfig` -> `IPv4 Address`).
-2. Set `usePhysicalIp = true` and paste your IP in `_manualIp`.
-3. Ensures your phone and laptop are on the **Same Wi-Fi**.
-
-### 3. Run the App
+### 3. Frontend Setup (Flutter)
+Return to the root directory and install Flutter dependencies:
 ```bash
-# Get dependencies
 flutter pub get
+```
 
-# Launch app
+**Run the App:**
+```bash
 flutter run
 ```
+*(The app is pre-configured to automatically connect to the live Render backend. No local tunneling is required).*
 
 ---
 
-## 🛠 Tech Stack
-
-*   **Frontend**: Flutter (Dart) with Provider
-*   **Backend**: Node.js, Express, MongoDB Atlas
-*   **AI/Vitals**: Sarvam AI (Translation), rPPG-Toolbox (Pulse detection)
-*   **Tooling**: Localtunnel (Public Gateway)
+## 📂 Folder Structure
+* `/lib`: The primary Flutter frontend source code, split into `core`, `pages`, and `services`.
+* `/backend`: The Express.js backend containing `controllers`, `models`, and `routes`.
+* `/assets`: Application images and static resources.
 
 ---
 
-## 📂 Project Structure
-
-```
-gram_setu/
-├── lib/
-│   ├── main.dart             # Route registry
-│   ├── core/                 # Theme, Providers, Constants
-│   ├── pages/                # All Screen widgets
-│   ├── services/             # API and Vitals logic
-│   ├── widgets/              # Reusable UI components
-│   └── models/               # Client-side data models
-├── backend/
-│   ├── server.js             # Entry point
-│   ├── routes/               # Express API routes
-│   └── models/               # MongoDB Schemas
-├── assets/                   # Images and Icons
-└── pubspec.yaml              # App configuration
-```
+## 🚀 Future Improvements
+* **Video Consultations:** Integrate WebRTC for live doctor-patient video calls.
+* **AI Diagnostics:** Analyze patient symptoms dynamically using an LLM.
+* **Offline First:** Implement local SQLite caching so ASHA workers can operate in dead zones and sync when internet is restored.
 
 ---
-
-## 📋 Roadmap
-- [x] Live Video Consultations
-- [x] rPPG Pulse Monitoring
-- [x] Multilingual Support (Sarvam AI)
-- [x] Pharmacy Marketplace
-- [x] ASHA Worker Outreach portal
-- [ ] Offline-First Cache
-- [ ] District Health API Integration
-
----
-
-> Built with ❤️ for rural India.
-
----
-
-## 🗺 Roadmap
-
-- [x] Live video consultations
-- [x] rPPG heart rate monitoring
-- [x] Multilingual UI (Sarvam AI)
-- [x] Doctor consultation dashboard
-- [x] E-prescription module
-- [x] ASHA worker integration
-- [ ] District health API integration
-- [ ] Offline-first mode
-- [ ] Live rPPG deployment at scale
-
----
-
-## 🙏 Acknowledgements
-
-- [rPPG-Toolbox](https://github.com/ubicomplab/rPPG-Toolbox) — UbiComp Lab, University of Washington
-- [Sarvam AI](https://api.sarvam.ai) — Indian language translation API
-- [Flutter](https://flutter.dev) — Google's UI toolkit for cross-platform apps
-- Built with ❤️ for rural India at the Mobile App Development Hackathon 2026
-
----
-
-> **Note**: The app is pre-configured with a MongoDB Atlas cloud database. No local database setup is required.
+*Built with ❤️ for Hackathon 2026*

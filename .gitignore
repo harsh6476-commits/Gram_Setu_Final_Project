@@ -1,22 +1,51 @@
-# Flutter
-.dart_tool/
+# Node.js
+node_modules/
+.env
+npm-debug.log
+yarn-error.log
+
+# Flutter/Dart
 build/
+.dart_tool/
+.packages
 .flutter-plugins
 .flutter-plugins-dependencies
-.packages
-.pub-cache/
-.pub/
-android/gram_setu_android.iml
-gram_setu.iml
+.metadata
 
-# OS-specific
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# OS Files
 .DS_Store
 Thumbs.db
 
-# Node.js
-backend/node_modules/
-backend/package-lock.json
-
-# Environment
-.env
+# Logs and Debug
 *.log
+errors*.txt
+files.txt
+analysis_output.txt
+analyze_errors.txt
+final_errors.txt
+git_status.txt
+ip.txt
+4
+fix-ip.ps1
+start-all.bat
+RUN_BACKEND.bat
+
+# Android/iOS builds
+android/app/build/
+android/.gradle/
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/app.flx
+ios/Flutter/app.zip
+ios/Flutter/flutter_assets/
+ios/Flutter/flutter_export_environment.sh
+ios/Pods/
